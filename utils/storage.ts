@@ -6,8 +6,24 @@ const API_BASE_URL = 'http://localhost:5000/api'; // Change this to your backend
 // Helper function to sync data to backend
 const syncToBackend = async (endpoint: string, data: any, method: 'POST' | 'PUT' = 'POST') => {
   try {
+<<<<<<< HEAD
     // For now, just log the sync attempt and return true to avoid errors
     console.log(`Syncing to backend: ${method} ${API_BASE_URL}${endpoint}`, data);
+=======
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to sync to backend: ${response.statusText}`);
+      return false;
+    }
+
+>>>>>>> cd25b5d (not yet done)
     return true;
   } catch (error) {
     console.error('Error syncing to backend:', error);
@@ -49,11 +65,14 @@ export interface PatientProfile {
   details_allergies: string;
   groupe_sanguin_rhesus: string;
 
+<<<<<<< HEAD
   // New profile keys
   date_diagnostic?: string;
   age_au_diagnostic?: string;
   vaccins_naissance?: Record<string, boolean>;
 
+=======
+>>>>>>> cd25b5d (not yet done)
   // Static consultation fields moved from ConsultationData
   fosa: string;
   fosa_other: string;
@@ -255,6 +274,10 @@ const STORAGE_KEYS = {
   CONSULTATIONS: '@consultations',
   FOLLOW_UPS: '@follow_ups',
   VACCINATIONS: '@vaccinations',
+<<<<<<< HEAD
+=======
+  ONBOARDING_COMPLETE: '@onboarding_complete',
+>>>>>>> cd25b5d (not yet done)
 } as const;
 
 export const savePatient = async (patient: PatientProfile): Promise<void> => {
@@ -475,6 +498,27 @@ export const deleteVaccinationRecord = async (patientId: string): Promise<void> 
   }
 };
 
+<<<<<<< HEAD
+=======
+export const setOnboardingComplete = async (): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, 'true');
+  } catch (error) {
+    console.error('Error setting onboarding complete:', error);
+    throw error;
+  }
+};
+
+export const isOnboardingComplete = async (): Promise<boolean> => {
+  try {
+    const value = await AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETE);
+    return value === 'true';
+  } catch (error) {
+    console.error('Error checking onboarding complete:', error);
+    return false;
+  }
+};
+>>>>>>> cd25b5d (not yet done)
 
 export const searchPatients = async (query: string): Promise<PatientProfile[]> => {
   try {
