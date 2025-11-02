@@ -1,98 +1,292 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { getConsultations, getFollowUps, getPatients } from '@/utils/storage';
+import { Ionicons as Activity, Ionicons as FileText, Ionicons as SearchIcon, Ionicons as UserPlus, Ionicons as Users } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const { width } = Dimensions.get('window');
 
-export default function HomeScreen() {
+const HomeScreen = () => {
+  const router = useRouter();
+  const [stats, setStats] = useState({
+    totalPatients: 0,
+    totalConsultations: 0,
+    totalFollowUps: 0,
+    recentPatients: 0,
+  });
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    const patients = await getPatients();
+    const consultations = await getConsultations();
+    const followUps = await getFollowUps();
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const recentPatients = patients.filter(
+      p => new Date(p.created_at) > thirtyDaysAgo
+    ).length;
+
+    setStats({
+      totalPatients: patients.length,
+      totalConsultations: consultations.length,
+      totalFollowUps: followUps.length,
+      recentPatients,
+    });
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadStats();
+    setRefreshing(false);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#E84855']}
+          tintColor="#E84855"
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+      }
+    >
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Tableau de bord</Text>
+        <Text style={styles.headerSubtitle}>Gestion des patients drépanocytaires</Text>
+      </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <TouchableOpacity 
+        style={styles.searchBar}
+        onPress={() => router.push('/(tabs)/search')}
+      >
+        <SearchIcon name="search" size={20} color="#9CA3AF" />
+        <Text style={styles.searchPlaceholder}>Rechercher un patient...</Text>
+      </TouchableOpacity>
+
+      <View style={styles.quickActions}>
+        <Text style={styles.sectionTitle}>Actions rapides</Text>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            style={[styles.actionCard, { backgroundColor: '#FFE5E5' }]}
+            onPress={() => router.push('/create-patient')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#E84855' }]}>
+              <UserPlus name="person-add" size={24} color="white" />
+            </View>
+            <Text style={styles.actionLabel}>Nouveau{`\n`}Patient</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionCard, { backgroundColor: '#E8F5FF' }]}
+            onPress={() => router.push('/(tabs)/consultations')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#3B82F6' }]}>
+              <FileText name="document-text" size={24} color="white" />
+            </View>
+            <Text style={styles.actionLabel}>Consulta-{`\n`}tions</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionCard, { backgroundColor: '#E8F9F1' }]}
+            onPress={() => router.push('/(tabs)/statistics')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#10B981' }]}>
+              <Activity name="bar-chart" size={24} color="white" />
+            </View>
+            <Text style={styles.actionLabel}>Statis-{`\n`}tiques</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionCard, { backgroundColor: '#FFF4E5' }]}
+            onPress={() => router.push('/(tabs)/search')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#F59E0B' }]}>
+              <Users name="people" size={24} color="white" />
+            </View>
+            <Text style={styles.actionLabel}>Tous les{`\n`}patients</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.statsSection}>
+        <Text style={styles.sectionTitle}>Vue d&apos;ensemble</Text>
+        <View style={styles.statsGrid}>
+          <View style={styles.statItem}>
+            <View style={styles.statHeader}>
+              <Text style={styles.statNumber}>{stats.totalPatients}</Text>
+              <View style={[styles.statIconSmall, { backgroundColor: '#FFE5E5' }]}>
+                <Users name="people" size={16} color="#E84855" />
+              </View>
+            </View>
+            <Text style={styles.statLabel}>Total Patients</Text>
+          </View>
+
+          <View style={styles.statItem}>
+            <View style={styles.statHeader}>
+              <Text style={styles.statNumber}>{stats.totalConsultations}</Text>
+              <View style={[styles.statIconSmall, { backgroundColor: '#E8F5FF' }]}>
+                <FileText name="document-text" size={16} color="#3B82F6" />
+              </View>
+            </View>
+            <Text style={styles.statLabel}>Consultations</Text>
+          </View>
+
+          <View style={styles.statItem}>
+            <View style={styles.statHeader}>
+              <Text style={styles.statNumber}>{stats.totalFollowUps}</Text>
+              <View style={[styles.statIconSmall, { backgroundColor: '#E8F9F1' }]}>
+                <Activity name="bar-chart" size={16} color="#10B981" />
+              </View>
+            </View>
+            <Text style={styles.statLabel}>Suivis</Text>
+          </View>
+
+          <View style={styles.statItem}>
+            <View style={styles.statHeader}>
+              <Text style={styles.statNumber}>{stats.recentPatients}</Text>
+              <View style={[styles.statIconSmall, { backgroundColor: '#FFF4E5' }]}>
+                <UserPlus name="person-add" size={16} color="#F59E0B" />
+              </View>
+            </View>
+            <Text style={styles.statLabel}>Nouveaux (30j)</Text>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    backgroundColor: '#F9FAFB',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold' as const,
+    color: '#111827',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: '#6B7280',
+  },
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    backgroundColor: 'white',
+    marginHorizontal: 20,
+    marginBottom: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  stepContainer: {
-    gap: 8,
+  searchPlaceholder: {
+    fontSize: 15,
+    color: '#9CA3AF',
+  },
+  quickActions: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 16,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  actionCard: {
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: 20,
+    padding: 16,
+    justifyContent: 'space-between',
+    minHeight: 120,
+  },
+  actionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+    lineHeight: 18,
+  },
+  statsSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  statItem: {
+    flex: 1,
+    minWidth: (width - 52) / 2,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  statHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  statNumber: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  statIconSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500',
   },
 });
+
+export default HomeScreen;
