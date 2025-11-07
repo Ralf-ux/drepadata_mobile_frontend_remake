@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState } from 'react';
 =======
 import React, { useState, useEffect } from 'react';
@@ -17,7 +16,6 @@ import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { v4 as uuidv4 } from 'uuid';
-<<<<<<< HEAD
 import 'react-native-get-random-values';
 =======
 >>>>>>> cd25b5d (not yet done)
@@ -25,7 +23,6 @@ import { savePatient, type PatientProfile } from '@/utils/storage';
 
 const CreatePatientScreen = () => {
   const router = useRouter();
-<<<<<<< HEAD
 
   /* ---------- 12 MANDATORY FIELDS ---------- */
   const [formData, setFormData] = useState({
@@ -37,7 +34,6 @@ const CreatePatientScreen = () => {
     numero_identification_unique: `P${Date.now()}`,
     nom: '',
     prenom: '',
-<<<<<<< HEAD
     sexe: '',
     date_diagnostic: '',
     age_diagnostic: '',
@@ -122,7 +118,6 @@ const CreatePatientScreen = () => {
     updated_at: new Date().toISOString(),
   });
 
-<<<<<<< HEAD
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   /* ------------- handlers ------------- */
@@ -165,7 +160,6 @@ const CreatePatientScreen = () => {
   };
 
   const handleSubmit = async () => {
-<<<<<<< HEAD
     const required: (keyof typeof formData)[] = [
       'nom',
       'prenom',
@@ -193,7 +187,6 @@ const CreatePatientScreen = () => {
     }
 
     try {
-<<<<<<< HEAD
       await savePatient(formData as unknown as PatientProfile);
 =======
       await savePatient(formData);
@@ -203,7 +196,6 @@ const CreatePatientScreen = () => {
         'Profil patient créé avec succès',
         [
           {
-<<<<<<< HEAD
             text: 'Créer la consultation initiale',
 =======
             text: 'Créer une consultation',
@@ -216,7 +208,6 @@ const CreatePatientScreen = () => {
           },
         ]
       );
-<<<<<<< HEAD
     } catch {
       Alert.alert('Erreur', 'Impossible de créer le profil');
     }
@@ -313,7 +304,6 @@ const CreatePatientScreen = () => {
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={(event, selectedDate) => {
               setShowDatePicker(false);
-<<<<<<< HEAD
               if (selectedDate) update('date_diagnostic', selectedDate.toISOString());
 =======
               if (selectedDate) {
@@ -328,7 +318,6 @@ const CreatePatientScreen = () => {
           />
         )}
 
-<<<<<<< HEAD
         <Label required>Âge au diagnostic</Label>
         <TextInput
           style={styles.input}
@@ -478,7 +467,6 @@ const CreatePatientScreen = () => {
           <Picker.Item label="Autre" value="Autre" />
         </Picker>
 
-<<<<<<< HEAD
         <Label>Antécédents familiaux</Label>
         <TextInput
           style={styles.input}
@@ -1067,7 +1055,6 @@ const CreatePatientScreen = () => {
   );
 };
 
-<<<<<<< HEAD
 /* ---------------- styles ---------------- */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f9fa' },

@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-<<<<<<< HEAD
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
@@ -18,7 +17,6 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   const [isReady, setIsReady] = useState(false);
-<<<<<<< HEAD
   const router = useRouter();
 
   useEffect(() => {

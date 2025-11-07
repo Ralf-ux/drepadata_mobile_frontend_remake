@@ -89,7 +89,6 @@ const HomeScreen = () => {
             <View style={[styles.actionIcon, { backgroundColor: '#E84855' }]}>
               <UserPlus name="person-add" size={24} color="white" />
             </View>
-<<<<<<< HEAD
             <Text style={styles.actionLabel}>Nouveau Patient</Text>
 =======
             <Text style={styles.actionLabel}>Nouveau{`\n`}Patient</Text>
@@ -103,7 +102,6 @@ const HomeScreen = () => {
             <View style={[styles.actionIcon, { backgroundColor: '#3B82F6' }]}>
               <FileText name="document-text" size={24} color="white" />
             </View>
-<<<<<<< HEAD
             <Text style={styles.actionLabel}>Consultations</Text>
 =======
             <Text style={styles.actionLabel}>Consulta-{`\n`}tions</Text>
@@ -117,7 +115,6 @@ const HomeScreen = () => {
             <View style={[styles.actionIcon, { backgroundColor: '#10B981' }]}>
               <Activity name="bar-chart" size={24} color="white" />
             </View>
-<<<<<<< HEAD
             <Text style={styles.actionLabel}>Statistiques</Text>
 =======
             <Text style={styles.actionLabel}>Statis-{`\n`}tiques</Text>
@@ -131,7 +128,6 @@ const HomeScreen = () => {
             <View style={[styles.actionIcon, { backgroundColor: '#F59E0B' }]}>
               <Users name="people" size={24} color="white" />
             </View>
-<<<<<<< HEAD
             <Text style={styles.actionLabel}>Tous les patients</Text>
 =======
             <Text style={styles.actionLabel}>Tous les{`\n`}patients</Text>
@@ -228,7 +224,6 @@ const styles = StyleSheet.create({
   },
   quickActions: {
     paddingHorizontal: 20,
-<<<<<<< HEAD
     marginBottom: -48,
 =======
     marginBottom: 24,
@@ -242,7 +237,6 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: 'row',
-<<<<<<< HEAD
     flexWrap: 'wrap',
     gap: 12,
   },
@@ -274,7 +268,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionLabel: {
-<<<<<<< HEAD
     fontSize: 12,
     fontWeight: '600',
     color: '#374151',
@@ -290,7 +283,6 @@ const styles = StyleSheet.create({
   statsSection: {
     paddingHorizontal: 20,
     paddingBottom: 24,
-<<<<<<< HEAD
     marginTop: -48,
 =======
 >>>>>>> cd25b5d (not yet done)
