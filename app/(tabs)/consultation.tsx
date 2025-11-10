@@ -932,7 +932,7 @@ const ConsultationForm = () => {
       </View>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Contact d'urgence - Relation</Text>
+        <Text style={styles.label}>Contact d\'urgence - Relation</Text>
         <TextInput
           style={styles.input}
           value={formData.emergency_contact_relation}
@@ -1198,4 +1198,1381 @@ const ConsultationForm = () => {
       <View style={styles.formGroup}>
         <Text style={styles.label}>Acide folique</Text>
         <Picker
-          selectedValue={formData.acide_folique_step3
+          selectedValue={formData.acide_folique_step3}
+          onValueChange={value => updateFormData('acide_folique_step3', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+    </View>
+  );
+
+  const renderStep4 = () => (
+    <View>
+      <Text style={styles.stepTitle}>🏥 Complications et traitements</Text>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Hospitalisations au cours des 3 derniers mois</Text>
+        <Picker
+          selectedValue={formData.hospitalisations_3_derniers_mois}
+          onValueChange={value => updateFormData('hospitalisations_3_derniers_mois', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      {formData.hospitalisations_3_derniers_mois === 'Oui' && (
+        <>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Nombre d'hospitalisations</Text>
+            <Picker
+              selectedValue={formData.nombre_hospitalisations_3mois}
+              onValueChange={value => updateFormData('nombre_hospitalisations_3mois', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="1" value="1" />
+              <Picker.Item label="2" value="2" />
+              <Picker.Item label="3" value="3" />
+              <Picker.Item label="4" value="4" />
+              <Picker.Item label="5" value="5" />
+              <Picker.Item label="6+" value="6+" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Cause de l'hospitalisation</Text>
+            <TextInput
+              style={styles.input}
+              multiline
+              numberOfLines={2}
+              value={formData.hospitalization_cause}
+              onChangeText={value => updateFormData('hospitalization_cause', value)}
+              placeholder="Cause de l'hospitalisation"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Durée de la plus longue hospitalisation (jours)</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              value={formData.longest_hospitalization}
+              onChangeText={value => updateFormData('longest_hospitalization', value)}
+              placeholder="Nombre de jours"
+            />
+          </View>
+        </>
+      )}
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Réaction transfusionnelle</Text>
+        <Picker
+          selectedValue={formData.transfusion_reaction}
+          onValueChange={value => updateFormData('transfusion_reaction', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      {formData.transfusion_reaction === 'Oui' && (
+        <>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Types de réaction</Text>
+            {renderCheckboxGroup('reaction_types', ['Fièvre', 'Frissons', 'Rash cutané', 'Dyspnée', 'Hypotension', 'Autres'], 'Types de réaction')}
+          </View>
+
+          {formData.reaction_types.includes('Autres') && (
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Autre réaction</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.reaction_type_other}
+                onChangeText={value => updateFormData('reaction_type_other', value)}
+                placeholder="Préciser"
+              />
+            </View>
+          )}
+        </>
+      )}
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Allo-immunisation</Text>
+        <Picker
+          selectedValue={formData.allo_immunization}
+          onValueChange={value => updateFormData('allo_immunization', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Hyperviscosité</Text>
+        <Picker
+          selectedValue={formData.hyperviscosity}
+          onValueChange={value => updateFormData('hyperviscosity', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Syndrome thoracique aigu</Text>
+        <Picker
+          selectedValue={formData.acute_chest_syndrome}
+          onValueChange={value => updateFormData('acute_chest_syndrome', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Événement aigu</Text>
+        <Picker
+          selectedValue={formData.acute_event}
+          onValueChange={value => updateFormData('acute_event', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      {formData.acute_event === 'Oui' && (
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Détails de l'événement aigu</Text>
+          <TextInput
+            style={styles.input}
+            multiline
+            numberOfLines={2}
+            value={formData.acute_event_details}
+            onChangeText={value => updateFormData('acute_event_details', value)}
+            placeholder="Détails"
+          />
+        </View>
+      )}
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>AVC</Text>
+        <Picker
+          selectedValue={formData.stroke}
+          onValueChange={value => updateFormData('stroke', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Priapisme</Text>
+        <Picker
+          selectedValue={formData.priapism}
+          onValueChange={value => updateFormData('priapism', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Ulcère de jambe</Text>
+        <Picker
+          selectedValue={formData.leg_ulcer}
+          onValueChange={value => updateFormData('leg_ulcer', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Cholécystectomie</Text>
+        <Picker
+          selectedValue={formData.cholecystectomy}
+          onValueChange={value => updateFormData('cholecystectomy', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Asplénie</Text>
+        <Picker
+          selectedValue={formData.asplenia}
+          onValueChange={value => updateFormData('asplenia', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Vaccins recommandés</Text>
+        {renderCheckboxGroup('recommended_vaccines', ['Pneumocoque', 'Méningocoque', 'Haemophilus influenzae', 'Hépatite B', 'Autres'], 'Vaccins recommandés')}
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Effets secondaires des médicaments</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={2}
+          value={formData.drug_side_effects}
+          onChangeText={value => updateFormData('drug_side_effects', value)}
+          placeholder="Effets secondaires"
+        />
+      </View>
+    </View>
+  );
+
+  const renderStep5 = () => (
+    <View>
+      <Text style={styles.stepTitle}>💊 Traitements</Text>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Hydroxyurée</Text>
+        <Picker
+          selectedValue={formData.hydroxyurea}
+          onValueChange={value => updateFormData('hydroxyurea', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      {formData.hydroxyurea === 'Oui' && (
+        <>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Tolérance</Text>
+            <Picker
+              selectedValue={formData.tolerance}
+              onValueChange={value => updateFormData('tolerance', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Bonne" value="Bonne" />
+              <Picker.Item label="Moyenne" value="Moyenne" />
+              <Picker.Item label="Mauvaise" value="Mauvaise" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Raisons de l'arrêt</Text>
+            <TextInput
+              style={styles.input}
+              multiline
+              numberOfLines={2}
+              value={formData.hydroxyurea_reasons}
+              onChangeText={value => updateFormData('hydroxyurea_reasons', value)}
+              placeholder="Raisons"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Posologie hydroxyurée</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.posologie_hydroxyurea}
+              onChangeText={value => updateFormData('posologie_hydroxyurea', value)}
+              placeholder="Posologie"
+            />
+          </View>
+        </>
+      )}
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Acide folique</Text>
+        <Picker
+          selectedValue={formData.folic_acid}
+          onValueChange={value => updateFormData('folic_acid', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Antibioprophylaxie</Text>
+        <Picker
+          selectedValue={formData.antibio_prophylaxie}
+          onValueChange={value => updateFormData('antibio_prophylaxie', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Transfusion sanguine régulière</Text>
+        <Picker
+          selectedValue={formData.regular_transfusion}
+          onValueChange={value => updateFormData('regular_transfusion', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      {formData.regular_transfusion === 'Oui' && (
+        <>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Type de transfusion sanguine</Text>
+            <Picker
+              selectedValue={formData.type_transfusion_sanguine}
+              onValueChange={value => updateFormData('type_transfusion_sanguine', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Culot globulaire" value="Culot globulaire" />
+              <Picker.Item label="Culot plaquettaire" value="Culot plaquettaire" />
+              <Picker.Item label="Plasma frais congelé" value="Plasma frais congelé" />
+              <Picker.Item label="Autres" value="Autres" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Fréquence de transfusion (3 derniers mois)</Text>
+            <Picker
+              selectedValue={formData.frequence_transfusion_3mois}
+              onValueChange={value => updateFormData('frequence_transfusion_3mois', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Hebdomadaire" value="Hebdomadaire" />
+              <Picker.Item label="Bihebdomadaire" value="Bihebdomadaire" />
+              <Picker.Item label="Mensuel" value="Mensuel" />
+              <Picker.Item label="Trimestriel" value="Trimestriel" />
+              <Picker.Item label="Autre" value="Autre" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Date de la dernière transfusion</Text>
+            {renderDatePicker('last_transfusion_date', 'Date de la dernière transfusion')}
+          </View>
+        </>
+      )}
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Autres traitements spécifiques</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={2}
+          value={formData.autres_traitements_specifiques}
+          onChangeText={value => updateFormData('autres_traitements_specifiques', value)}
+          placeholder="Autres traitements"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Observance</Text>
+        {renderCheckboxGroup('observance', ['Bonne', 'Moyenne', 'Mauvaise', 'Non évaluable'], 'Observance')}
+      </View>
+    </View>
+  );
+
+  const renderStep6 = () => (
+    <View>
+      <Text style={styles.stepTitle}>🔬 Examens biologiques</Text>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>NFS - GB</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={formData.nfs_gb}
+          onChangeText={value => updateFormData('nfs_gb', value)}
+          placeholder="GB"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>NFS - Hémoglobine</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={formData.nfs_hb}
+          onChangeText={value => updateFormData('nfs_hb', value)}
+          placeholder="Hémoglobine"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>NFS - Plaquettes</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={formData.nfs_pqts}
+          onChangeText={value => updateFormData('nfs_pqts', value)}
+          placeholder="Plaquettes"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Rétículocytes</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={formData.reticulocytes}
+          onChangeText={value => updateFormData('reticulocytes', value)}
+          placeholder="Rétículocytes"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Microalbuminurie</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={formData.microalbuminuria}
+          onChangeText={value => updateFormData('microalbuminuria', value)}
+          placeholder="Microalbuminurie"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Hémolyse</Text>
+        <Picker
+          selectedValue={formData.hemolysis}
+          onValueChange={value => updateFormData('hemolysis', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Groupe sanguin/Rhésus</Text>
+        <TextInput
+          style={styles.input}
+          value={formData.gs_rh}
+          onChangeText={value => updateFormData('gs_rh', value)}
+          placeholder="Groupe sanguin/Rhésus"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Imagerie médicale</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={2}
+          value={formData.imagerie_medical}
+          onChangeText={value => updateFormData('imagerie_medical', value)}
+          placeholder="Imagerie médicale"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Ophtalmologie</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={2}
+          value={formData.ophtalmologie}
+          onChangeText={value => updateFormData('ophtalmologie', value)}
+          placeholder="Ophtalmologie"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Consultations spécialisées</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={2}
+          value={formData.consultations_specialisees}
+          onChangeText={value => updateFormData('consultations_specialisees', value)}
+          placeholder="Consultations spécialisées"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Examen du jour</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={2}
+          value={formData.examen_du_jour}
+          onChangeText={value => updateFormData('examen_du_jour', value)}
+          placeholder="Examen du jour"
+        />
+      </View>
+    </View>
+  );
+
+  const renderStep7 = () => (
+    <View>
+      <Text style={styles.stepTitle}>👨‍👩‍👧‍👦 Aspects sociaux et éducatifs</Text>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Impact scolaire</Text>
+        <Picker
+          selectedValue={formData.impact_scolaire}
+          onValueChange={value => updateFormData('impact_scolaire', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Aucun" value="Aucun" />
+          <Picker.Item label="Léger" value="Léger" />
+          <Picker.Item label="Modéré" value="Modéré" />
+          <Picker.Item label="Sévère" value="Sévère" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Participation aux causeries</Text>
+        <Picker
+          selectedValue={formData.participation_causeries}
+          onValueChange={value => updateFormData('participation_causeries', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Régulière" value="Régulière" />
+          <Picker.Item label="Occasionnelle" value="Occasionnelle" />
+          <Picker.Item label="Rare" value="Rare" />
+          <Picker.Item label="Jamais" value="Jamais" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Suivi psychologique</Text>
+        <Picker
+          selectedValue={formData.suivie_psychologique}
+          onValueChange={value => updateFormData('suivie_psychologique', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Éducation thérapeutique</Text>
+        <Picker
+          selectedValue={formData.education_therapeutique}
+          onValueChange={value => updateFormData('education_therapeutique', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Consultation psychologique</Text>
+        <Picker
+          selectedValue={formData.consultation_psychologique}
+          onValueChange={value => updateFormData('consultation_psychologique', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Visite à domicile</Text>
+        <Picker
+          selectedValue={formData.visite_domicile}
+          onValueChange={value => updateFormData('visite_domicile', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Soutien social</Text>
+        <Picker
+          selectedValue={formData.soutien_social}
+          onValueChange={value => updateFormData('soutien_social', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      {formData.soutien_social === 'Oui' && (
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Options de soutien social</Text>
+          {renderCheckboxGroup('soutien_social_options', ['Aide financière', 'Aide alimentaire', 'Aide vestimentaire', 'Aide scolaire', 'Autres'], 'Options de soutien social')}
+        </View>
+      )}
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Impact social</Text>
+        <Picker
+          selectedValue={formData.impact_social}
+          onValueChange={value => updateFormData('impact_social', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Aucun" value="Aucun" />
+          <Picker.Item label="Léger" value="Léger" />
+          <Picker.Item label="Modéré" value="Modéré" />
+          <Picker.Item label="Sévère" value="Sévère" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Accompagnement spécial</Text>
+        <Picker
+          selectedValue={formData.accompagnement_special}
+          onValueChange={value => updateFormData('accompagnement_special', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Famille informée</Text>
+        <Picker
+          selectedValue={formData.famille_informee}
+          onValueChange={value => updateFormData('famille_informee', value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Oui" value="Oui" />
+          <Picker.Item label="Non" value="Non" />
+        </Picker>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Plan de suivi personnalisé</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={3}
+          value={formData.plan_suivi_personnalise}
+          onChangeText={value => updateFormData('plan_suivi_personnalise', value)}
+          placeholder="Plan de suivi personnalisé"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Date de la prochaine consultation</Text>
+        {renderDatePicker('date_prochaine_consultation', 'Date de la prochaine consultation')}
+      </View>
+    </View>
+  );
+
+  const renderStep8 = () => (
+    <View>
+      <Text style={styles.stepTitle}>📋 Évolution et plan de suivi</Text>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Examens avant consultation</Text>
+        {formData.examens_avant_consultation.map((examen, index) => (
+          <View key={index} style={styles.examenItem}>
+            <TextInput
+              style={styles.input}
+              value={examen}
+              onChangeText={value => updateExamen(index, value)}
+              placeholder={`Examen ${index + 1}`}
+            />
+            {formData.examens_avant_consultation.length > 1 && (
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => removeExamen(index)}
+              >
+                <Text style={styles.removeButtonText}>Supprimer</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ))}
+        <TouchableOpacity style={styles.addButton} onPress={addExamen}>
+          <Text style={styles.addButtonText}>Ajouter un examen</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Évolution</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={3}
+          value={formData.evolution}
+          onChangeText={value => updateFormData('evolution', value)}
+          placeholder="Évolution"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Éducation thérapeutique</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={2}
+          value={formData.education_therapeutique_step8}
+          onChangeText={value => updateFormData('education_therapeutique_step8', value)}
+          placeholder="Éducation thérapeutique"
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Date de la prochaine consultation (plan)</Text>
+        {renderDatePicker('date_prochaine_consultation_plan', 'Date de la prochaine consultation (plan)')}
+      </View>
+    </View>
+  );
+
+  const renderStep9 = () => (
+    <View>
+      <Text style={styles.stepTitle}>📝 Commentaires</Text>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Commentaires</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={5}
+          value={formData.commentaires}
+          onChangeText={value => updateFormData('commentaires', value)}
+          placeholder="Commentaires supplémentaires"
+        />
+      </View>
+    </View>
+  );
+
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 1:
+        return renderStep1();
+      case 2:
+        return renderStep2();
+      case 3:
+        return renderStep3();
+      case 4:
+        return renderStep4();
+      case 5:
+        return renderStep5();
+      case 6:
+        return renderStep6();
+      case 7:
+        return renderStep7();
+      case 8:
+        return renderStep8();
+      case 9:
+        return renderStep9();
+      default:
+        return renderStep1();
+    }
+  };
+
+  const renderNavigation = () => (
+    <View style={styles.navigationContainer}>
+      <TouchableOpacity
+        style={[styles.navButton, currentStep === 1 && styles.navButtonDisabled]}
+        onPress={prevStep}
+        disabled={currentStep === 1}
+      >
+        <Text style={[styles.navButtonText, currentStep === 1 && styles.navButtonTextDisabled]}>Précédent</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.stepIndicator}>Étape {currentStep} sur {totalSteps}</Text>
+
+      {currentStep < totalSteps ? (
+        <TouchableOpacity style={styles.navButton} onPress={nextStep}>
+          <Text style={styles.navButtonText}>Suivant</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity style={styles.submitButton} onPress={submitForm}>
+          <Text style={styles.submitButtonText}>Soumettre</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
+  return (
+    <ScrollView style={styles.container}>
+      {showPatientForm ? (
+        <View style={styles.patientFormContainer}>
+          <Text style={styles.title}>Informations du patient</Text>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Quartier *</Text>
+            <TextInput
+              style={styles.input}
+              value={patientFormData.quartier}
+              onChangeText={value => updatePatientFormData('quartier', value)}
+              placeholder="Quartier"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Lieu-dit</Text>
+            <TextInput
+              style={styles.input}
+              value={patientFormData.lieu_dit}
+              onChangeText={value => updatePatientFormData('lieu_dit', value)}
+              placeholder="Lieu-dit"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Contact d'urgence - Nom *</Text>
+            <TextInput
+              style={styles.input}
+              value={patientFormData.emergency_contact_name}
+              onChangeText={value => updatePatientFormData('emergency_contact_name', value)}
+              placeholder="Nom du contact d'urgence"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Contact d'urgence - Téléphone *</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="phone-pad"
+              value={patientFormData.emergency_contact_phone}
+              onChangeText={value => updatePatientFormData('emergency_contact_phone', value)}
+              placeholder="Téléphone du contact d'urgence"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Contact d'urgence - Relation *</Text>
+            <TextInput
+              style={styles.input}
+              value={patientFormData.emergency_contact_relation}
+              onChangeText={value => updatePatientFormData('emergency_contact_relation', value)}
+              placeholder="Relation"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Téléphone du patient *</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="phone-pad"
+              value={patientFormData.patient_phone}
+              onChangeText={value => updatePatientFormData('patient_phone', value)}
+              placeholder="Téléphone du patient"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Vit avec le patient *</Text>
+            <Picker
+              selectedValue={patientFormData.vit_avec_patient}
+              onValueChange={value => updatePatientFormData('vit_avec_patient', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Oui" value="Oui" />
+              <Picker.Item label="Non" value="Non" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Lien avec le patient *</Text>
+            <Picker
+              selectedValue={patientFormData.lien_avec_patient}
+              onValueChange={value => updatePatientFormData('lien_avec_patient', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Père" value="Père" />
+              <Picker.Item label="Mère" value="Mère" />
+              <Picker.Item label="Grand-mère" value="Grand-mère" />
+              <Picker.Item label="Grand-père" value="Grand-père" />
+              <Picker.Item label="Frère" value="Frère" />
+              <Picker.Item label="Sœur" value="Sœur" />
+              <Picker.Item label="Oncle" value="Oncle" />
+              <Picker.Item label="Tante" value="Tante" />
+              <Picker.Item label="Autre" value="Autre" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Patient référé</Text>
+            <Picker
+              selectedValue={patientFormData.referred}
+              onValueChange={value => updatePatientFormData('referred', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Oui" value="Oui" />
+              <Picker.Item label="Non" value="Non" />
+            </Picker>
+          </View>
+
+          {patientFormData.referred === 'Oui' && (
+            <>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Référé de</Text>
+                <Picker
+                  selectedValue={patientFormData.referred_from}
+                  onValueChange={value => updatePatientFormData('referred_from', value)}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="--Sélectionner--" value="" />
+                  <Picker.Item label="Hôpital district" value="Hôpital district" />
+                  <Picker.Item label="Centre de santé" value="Centre de santé" />
+                  <Picker.Item label="Médecin privé" value="Médecin privé" />
+                  <Picker.Item label="Autres" value="Autres" />
+                </Picker>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Référé pour</Text>
+                <Picker
+                  selectedValue={patientFormData.referred_for}
+                  onValueChange={value => updatePatientFormData('referred_for', value)}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="--Sélectionner--" value="" />
+                  <Picker.Item label="Meilleure prise en charge" value="Meilleure prise en charge" />
+                  <Picker.Item label="Suivi trimestriel" value="Suivi trimestriel" />
+                  <Picker.Item label="Urgence" value="Urgence" />
+                  <Picker.Item label="Autres" value="Autres" />
+                </Picker>
+              </View>
+            </>
+          )}
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Appartient à un groupe/Association</Text>
+            <Picker
+              selectedValue={patientFormData.appartient_groupe}
+              onValueChange={value => updatePatientFormData('appartient_groupe', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Oui" value="Oui" />
+              <Picker.Item label="Non" value="Non" />
+            </Picker>
+          </View>
+
+          {patientFormData.appartient_groupe === 'Oui' && (
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Nom du groupe/Association</Text>
+              <TextInput
+                style={styles.input}
+                value={patientFormData.nom_groupe_association}
+                onChangeText={value => updatePatientFormData('nom_groupe_association', value)}
+                placeholder="Nom du groupe ou association"
+              />
+            </View>
+          )}
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Rang dans la fratrie</Text>
+            <Picker
+              selectedValue={patientFormData.rang_fratrie}
+              onValueChange={value => updatePatientFormData('rang_fratrie', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="1" value="1" />
+              <Picker.Item label="2" value="2" />
+              <Picker.Item label="3" value="3" />
+              <Picker.Item label="4" value="4" />
+              <Picker.Item label="5" value="5" />
+              <Picker.Item label="6" value="6" />
+              <Picker.Item label="7" value="7" />
+              <Picker.Item label="8" value="8" />
+              <Picker.Item label="9" value="9" />
+              <Picker.Item label="10" value="10" />
+              <Picker.Item label="11" value="11" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Nombre de drépanocytaires dans la fratrie</Text>
+            <Picker
+              selectedValue={patientFormData.nombre_drepanocytaire_fratrie}
+              onValueChange={value => updatePatientFormData('nombre_drepanocytaire_fratrie', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="0" value="0" />
+              <Picker.Item label="1" value="1" />
+              <Picker.Item label="2" value="2" />
+              <Picker.Item label="3" value="3" />
+              <Picker.Item label="4" value="4" />
+              <Picker.Item label="5" value="5" />
+              <Picker.Item label="6+" value="6+" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Assurance</Text>
+            <Picker
+              selectedValue={patientFormData.insurance}
+              onValueChange={value => updatePatientFormData('insurance', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="CNPS" value="CNPS" />
+              <Picker.Item label="CNAS" value="CNAS" />
+              <Picker.Item label="Privée" value="Privée" />
+              <Picker.Item label="Aucune" value="Aucune" />
+              <Picker.Item label="Autres" value="Autres" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Type de drépanocytose *</Text>
+            <Picker
+              selectedValue={patientFormData.type_drepanocytose}
+              onValueChange={value => updatePatientFormData('type_drepanocytose', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="SS" value="SS" />
+              <Picker.Item label="SC" value="SC" />
+              <Picker.Item label="Sβ⁰" value="Sβ⁰" />
+              <Picker.Item label="Sβ⁺" value="Sβ⁺" />
+              <Picker.Item label="Autre" value="Autre" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Âge au diagnostic</Text>
+            <Picker
+              selectedValue={patientFormData.diagnosis_age}
+              onValueChange={value => updatePatientFormData('diagnosis_age', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="À la naissance" value="À la naissance" />
+              <Picker.Item label="0-3 mois" value="0-3 mois" />
+              <Picker.Item label="4-6 mois" value="4-6 mois" />
+              <Picker.Item label="7-12 mois" value="7-12 mois" />
+              <Picker.Item label="2-3 ans" value="2-3 ans" />
+              <Picker.Item label="4-5 ans" value="4-5 ans" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Circonstances du diagnostic</Text>
+            <Picker
+              selectedValue={patientFormData.diagnosis_circumstance}
+              onValueChange={value => updatePatientFormData('diagnosis_circumstance', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Diagnostic néonatal" value="Diagnostic néonatal" />
+              <Picker.Item label="Diagnostic à partir de la fratrie" value="Diagnostic à partir de la fratrie" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Région *</Text>
+            <Picker
+              selectedValue={patientFormData.region}
+              onValueChange={value => updatePatientFormData('region', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Centre" value="Centre" />
+              <Picker.Item label="Littoral" value="Littoral" />
+              <Picker.Item label="Ouest" value="Ouest" />
+              <Picker.Item label="Nord-Ouest" value="Nord-Ouest" />
+              <Picker.Item label="Sud-Ouest" value="Sud-Ouest" />
+              <Picker.Item label="Est" value="Est" />
+              <Picker.Item label="Nord" value="Nord" />
+              <Picker.Item label="Adamaoua" value="Adamaoua" />
+              <Picker.Item label="Extrême-Nord" value="Extrême-Nord" />
+              <Picker.Item label="Sud" value="Sud" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Antécédents familiaux</Text>
+            <Picker
+              selectedValue={patientFormData.family_history}
+              onValueChange={value => updatePatientFormData('family_history', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Oui" value="Oui" />
+              <Picker.Item label="Non" value="Non" />
+              <Picker.Item label="Inconnu" value="Inconnu" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Autres antécédents médicaux</Text>
+            <Picker
+              selectedValue={patientFormData.autres_antecedents_medicaux}
+              onValueChange={value => updatePatientFormData('autres_antecedents_medicaux', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Néphropathie" value="Néphropathie" />
+              <Picker.Item label="Cardiopathie" value="Cardiopathie" />
+              <Picker.Item label="Méningite" value="Méningite" />
+              <Picker.Item label="Autres" value="Autres" />
+              <Picker.Item label="Aucun" value="Aucun" />
+            </Picker>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Allergies</Text>
+            <Picker
+              selectedValue={patientFormData.allergies}
+              onValueChange={value => updatePatientFormData('allergies', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="--Sélectionner--" value="" />
+              <Picker.Item label="Oui" value="Oui" />
+              <Picker.Item label="Non" value="Non" />
+            </Picker>
+          </View>
+
+          {patientFormData.allergies === 'Oui' && (
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Détails des allergies</Text>
+              <TextInput
+                style={styles.input}
+                value={patientFormData.allergies_details}
+                onChangeText={value => updatePatientFormData('allergies_details', value)}
+                placeholder="Détails des allergies"
+              />
+            </View>
+          )}
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Groupe sanguin/Rhésus *</Text>
+            <TextInput
+              style={styles.input}
+              value={patientFormData.groupe_sanguin_rhesus}
+              onChangeText={value => updatePatientFormData('groupe_sanguin_rhesus', value)}
+              placeholder="Groupe sanguin/Rhésus"
+            />
+          </View>
+
+          <TouchableOpacity style={styles.submitButton} onPress={submitPatientForm}>
+            <Text style={styles.submitButtonText}>Continuer vers la consultation</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={{ flex: 1 }}>
+          <ScrollView style={{ flex: 1 }}>
+            {renderCurrentStep()}
+          </ScrollView>
+          {renderNavigation()}
+        </View>
+      )}
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  patientFormContainer: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#333',
+  },
+  formGroup: {
+    marginBottom: 15,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 5,
+    color: '#333',
+  },
+  required: {
+    color: '#e74c3c',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  picker: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#fff',
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  checkboxItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    marginLeft: 8,
+    color: '#333',
+  },
+  quickOptionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 10,
+  },
+  quickOption: {
+    backgroundColor: '#e0e0e0',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  quickOptionSelected: {
+    backgroundColor: '#007bff',
+  },
+  quickOptionText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  quickOptionTextSelected: {
+    color: '#fff',
+  },
+  stepTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#333',
+    textAlign: 'center',
+  },
+  navigationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+  },
+  navButton: {
+    backgroundColor: '#007bff',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  navButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  navButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  navButtonTextDisabled: {
+    color: '#999',
+  },
+  submitButton: {
+    backgroundColor: '#28a745',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  stepIndicator: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  examenItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  addButton: {
+    backgroundColor: '#007bff',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  removeButton: {
+    backgroundColor: '#dc3545',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginLeft: 10,
+  },
+  removeButtonText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+});
+
+export default ConsultationForm;
