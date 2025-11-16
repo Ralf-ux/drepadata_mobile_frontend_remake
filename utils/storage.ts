@@ -31,6 +31,7 @@ const syncToBackend = async (endpoint: string, data: any, method: 'POST' | 'PUT'
 };
 
 export interface PatientProfile {
+<<<<<<< HEAD
   id: string;
   numero_identification_unique: string;
   nom: string;
@@ -109,6 +110,55 @@ export interface PatientProfile {
   nombre_crises_vaso: string;
   allergies: string;
   allergies_details: string;
+=======
+  id: string; // Frontend generated ID
+  lastName: string;
+  firstName: string;
+  sex: 'Male' | 'Female';
+  dateOfDiagnosis: string; // Date string
+  ageAtDiagnosis: 'At birth' | '0-3 months' | '4-6 months' | '7-12 months' | '2-3 years' | '4-5 years';
+  circumstancesOfDiagnosis: 'Neonatal diagnosis' | 'Diagnosis from siblings';
+  uniqueId: string;
+  birthOrderInSiblings: number;
+  numberOfSickleCellInFamily: number;
+  typeOfSickleCell: 'SS' | 'SC' | 'Sβ⁰' | 'Sβ⁺' | 'Other';
+  personalMedicalHistory?: string;
+  familyMedicalHistory?: string;
+  bloodGroup: 'O+' | 'O-' | 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-';
+  rhesusFactor: 'Positive' | 'Negative';
+  vaccinesAtBirth?: string; // Comma-separated string of vaccines
+  dateOfBirth?: string; // Date string
+  age?: number;
+  relationshipWithPatient?: 'Father' | 'Mother' | 'Grandmother' | 'Grandfather' | 'Brother' | 'Sister' | 'Uncle' | 'Aunt' | 'Other';
+  neighborhood?: string;
+  locality?: string;
+  emergencyContact?: {
+    name?: string;
+    relationship?: string;
+    phone?: string;
+  };
+  patientPhone?: string;
+  livesWithPatient?: boolean;
+  belongsToGroup?: boolean;
+  groupName?: string;
+  insurance?: 'CNPS' | 'CNAS' | 'Private' | 'None' | 'Others';
+  insuranceDetails?: string;
+  vocLast3Months?: 'None' | '1' | '1-2' | '3-5' | 'More than 5';
+  familyHistory?: 'Yes' | 'No' | 'Unknown';
+  otherMedicalHistory?: string[];
+  previousSurgicalInterventions?: {
+    hasInterventions?: boolean;
+    dateOfLastIntervention?: string; // Date string
+    cause?: string;
+  };
+  folicAcid?: boolean;
+  knownAllergies?: {
+    hasAllergies?: boolean;
+    details?: string;
+  };
+  isActive?: boolean; // Defaulted in backend
+  createdBy?: string; // ObjectId string, handled by backend
+>>>>>>> 1d9fcb0 (Feat: Update PatientProfile interface in storage.ts to match backend schema)
 
   created_at: string;
   updated_at: string;
