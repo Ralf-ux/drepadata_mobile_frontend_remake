@@ -10,6 +10,12 @@ const SECRET_KEY = 'c4b6d9c150c8e9e09c7d5f4d7548c0a019ccaab7ac4fe76d5574ac3b3de0
 // Function to decrypt the token
 export const decryptToken = (encryptedToken, iv) => {
   try {
+    // If the IV is a simple string (not CryptoJS format), try to use token directly
+    if (!iv || iv.length < 16) {
+      console.log('decryptToken: Using token directly due to simple IV');
+      return encryptedToken;
+    }
+    
     const parsedKey = CryptoJS.enc.Hex.parse(SECRET_KEY);
     const decodedIv = CryptoJS.enc.Base64.parse(iv);
 
@@ -25,7 +31,9 @@ export const decryptToken = (encryptedToken, iv) => {
     }
     return decryptedStr;
   } catch (error) {
-    throw new Error(`Failed to decrypt token: ${error.message}`);
+    // If decryption fails, return the token directly as fallback
+    console.log('decryptToken: Decryption failed, using token directly as fallback');
+    return encryptedToken;
   }
 };
 
@@ -39,12 +47,21 @@ const fetchWithAuth = async (endpoint, options = {}) => {
     iv = await AsyncStorage.getItem('iv');
   }
 
-  if (token && iv) {
-    const decryptedToken = decryptToken(token, iv);
-    options.headers = {
-      ...options.headers,
-      Authorization: `Bearer ${decryptedToken}`,
-    };
+  if (token) {
+    // If IV is not available, try to use the token directly
+    if (iv) {
+      const decryptedToken = decryptToken(token, iv);
+      options.headers = {
+        ...options.headers,
+        Authorization: `Bearer ${decryptedToken}`,
+      };
+    } else {
+      // Fallback: use token directly if IV is not available
+      options.headers = {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
   }
 
   const response = await fetch(`${BASE_URL}${endpoint}`, options);

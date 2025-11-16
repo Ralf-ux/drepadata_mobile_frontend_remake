@@ -1,4 +1,4 @@
-import { getConsultations, getFollowUps, getPatients } from '@/utils/storage';
+import { getConsultations, getFollowUps, getPatients, initializeSamplePatients } from '@/utils/storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -39,6 +39,9 @@ const HomeScreen = () => {
   const [scaleAnim] = useState(new Animated.Value(0.95));
 
   useEffect(() => {
+    // Initialize sample patients if none exist
+    initializeSamplePatients();
+    
     loadStats();
     setGreetingMessage();
     

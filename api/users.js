@@ -7,6 +7,8 @@ export const login = (userData) => post(`/auth/login`, userData);
 
 //for patients Endpoints
 export const createPatient = (patientsData) => post('/patients', patientsData);
+export const updatePatient = (id, patientsData) => put(`/patients/${id}`, patientsData);
+export const deletePatient = (id) => del(`/patients/${id}`);
 export const getPatients = () => get('/patients');
 
 

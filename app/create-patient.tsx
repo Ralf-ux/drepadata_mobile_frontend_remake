@@ -8,10 +8,10 @@ import {
   ScrollView,
   Platform,
   Alert,
+  Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { v4 as uuidv4 } from 'uuid';
 import 'react-native-get-random-values';
 import Toast from 'react-native-toast-message';
@@ -19,123 +19,173 @@ import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from '@/redux/authSlice';
 import { createPatient } from '@/api/users';
 
-interface EmergencyContact {
-  nom: string;
-  relation: string;
-  telephone: string;
-}
+interface PatientData {
+  // Basic Information
+  lastName: string;
+  firstName: string;
+  sex: 'Male' | 'Female';
+  dateOfDiagnosis: Date;
+  ageAtDiagnosis: 'At birth' | '0-3 months' | '4-6 months' | '7-12 months' | '2-3 years' | '4-5 years';
+  circumstancesOfDiagnosis: 'Neonatal diagnosis' | 'Diagnosis from siblings';
+  uniqueId: string;
+  birthOrderInSiblings: number;
+  numberOfSickleCellInFamily: number;
+  typeOfSickleCell: 'SS' | 'SC' | 'Sβ⁰' | 'Sβ⁺' | 'Other';
+  personalMedicalHistory?: string;
+  familyMedicalHistory?: string;
+  bloodGroup: 'O+' | 'O-' | 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-';
+  rhesusFactor: 'Positive' | 'Negative';
+  vaccinesAtBirth?: string;
 
-interface PatientProfile {
-  id: string;
-  numero_identification_unique: string;
-  nom: string;
-  prenom: string;
-  sexe: 'Masculin' | 'Féminin' | '';
-  date_naissance: string;
-  age: string;
-  date_diagnostic?: string;
-  age_diagnostic: string;
-  circonstances_du_diagnostic: string;
-  type_de_drepanocytose: 'SS' | 'SC' | 'Sβ⁰' | 'Sβ⁺' | 'Autre' | '';
-  groupe_sanguin_rhesus: string;
-  quartier: string;
-  lieu_dit: string;
-  telephone_patient: string;
-  contact_urgence_nom: string;
-  contact_urgence_telephone: string;
-  contact_urgence_relation: string;
-  vit_avec_le_patient: boolean;
-  lien_avec_patient: string;
-  region: string;
-  antecedent_familiaux: string;
-  autres_antecedents_medicaux: string;
-  allergies_connues: boolean;
-  details_allergies: string;
-  patient_refere: boolean;
-  patient_refere_de: string;
-  patient_refere_pour: string;
-  appartient_a_groupe: boolean;
-  nom_du_groupe: string;
-  rang_dans_fratrie: string;
-  nombre_de_drepanocytaires_dans_fratrie: string;
-  assurance: 'CNPS' | 'CNAS' | 'Privée' | 'Aucune' | 'Autre' | '';
-  insurance_other?: string;
-  created_at: string;
-  updated_at: string;
+  // Demographic Data
+  dateOfBirth?: Date;
+  age?: number;
+  relationshipWithPatient?: 'Father' | 'Mother' | 'Grandmother' | 'Grandfather' | 'Brother' | 'Sister' | 'Uncle' | 'Aunt' | 'Other';
+  neighborhood?: string;
+  locality?: string;
+  emergencyContact?: {
+    name: string;
+    relationship: string;
+    phone: string;
+  };
+  patientPhone?: string;
+  livesWithPatient?: boolean;
+  belongsToGroup?: boolean;
+  groupName?: string;
+  insurance: 'CNPS' | 'CNAS' | 'Private' | 'None' | 'Others';
+  insuranceDetails?: string;
+
+  // Medical History
+  vocLast3Months?: 'None' | '1' | '1-2' | '3-5' | 'More than 5';
+  familyHistory?: 'Yes' | 'No' | 'Unknown';
+  otherMedicalHistory?: ('Nephropathy' | 'Cardiopathy' | 'Meningitis' | 'Others' | 'None')[];
+  previousSurgicalInterventions?: {
+    hasInterventions: boolean;
+    dateOfLastIntervention?: Date;
+    cause?: string;
+  };
+  folicAcid?: boolean;
+  knownAllergies?: {
+    hasAllergies: boolean;
+    details?: string;
+  };
 }
 
 const CreatePatientScreen = () => {
   const router = useRouter();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
-  const [formData, setFormData] = useState<PatientProfile>({
-    id: uuidv4(),
-    numero_identification_unique: `P${Date.now()}`,
-    nom: '',
-    prenom: '',
-    sexe: '',
-    date_naissance: '',
-    age: '',
-    age_diagnostic: '',
-    circonstances_du_diagnostic: '',
-    type_de_drepanocytose: '',
-    groupe_sanguin_rhesus: '',
-    quartier: '',
-    lieu_dit: '',
-    telephone_patient: '',
-    contact_urgence_nom: '',
-    contact_urgence_telephone: '',
-    contact_urgence_relation: '',
-    vit_avec_le_patient: false,
-    lien_avec_patient: '',
-    region: '',
-    antecedent_familiaux: '',
-    autres_antecedents_medicaux: '',
-    allergies_connues: false,
-    details_allergies: '',
-    patient_refere: false,
-    patient_refere_de: '',
-    patient_refere_pour: '',
-    appartient_a_groupe: false,
-    nom_du_groupe: '',
-    rang_dans_fratrie: '',
-    nombre_de_drepanocytaires_dans_fratrie: '',
-    assurance: '',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+  const [formData, setFormData] = useState<PatientData>({
+    // Basic Information
+    lastName: '',
+    firstName: '',
+    sex: 'Male',
+    dateOfDiagnosis: new Date(),
+    ageAtDiagnosis: 'At birth',
+    circumstancesOfDiagnosis: 'Neonatal diagnosis',
+    uniqueId: `P${Date.now()}`,
+    birthOrderInSiblings: 1,
+    numberOfSickleCellInFamily: 0,
+    typeOfSickleCell: 'SS',
+    bloodGroup: 'O+',
+    rhesusFactor: 'Positive',
+    personalMedicalHistory: '',
+    familyMedicalHistory: '',
+
+    // Demographic Data
+    dateOfBirth: new Date(),
+    age: 0,
+    relationshipWithPatient: undefined,
+    neighborhood: '',
+    locality: '',
+    emergencyContact: {
+      name: '',
+      relationship: '',
+      phone: '',
+    },
+    patientPhone: '',
+    livesWithPatient: false,
+    belongsToGroup: false,
+    groupName: '',
+    insurance: 'None',
+    insuranceDetails: '',
+
+    // Medical History
+    vocLast3Months: undefined,
+    familyHistory: undefined,
+    otherMedicalHistory: undefined,
+    previousSurgicalInterventions: {
+      hasInterventions: false,
+    },
+    folicAcid: false,
+    knownAllergies: {
+      hasAllergies: false,
+    },
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  // Auto-calculate age from date_naissance
+  // Auto-calculate age from dateOfBirth
   useEffect(() => {
-    if (formData.date_naissance) {
-      const birthDate = new Date(formData.date_naissance);
+    if (formData.dateOfBirth) {
+      const birthDate = new Date(formData.dateOfBirth);
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
       const m = today.getMonth() - birthDate.getMonth();
       if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
         age--;
       }
-      setFormData(prev => ({ ...prev, age: age.toString() }));
+      setFormData(prev => ({ ...prev, age }));
     }
-  }, [formData.date_naissance]);
+  }, [formData.dateOfBirth]);
 
-  const updateFormData = <K extends keyof PatientProfile>(
+  const handleDateConfirm = (date: Date) => {
+    setSelectedDate(date);
+    updateFormData('dateOfBirth', date);
+    setShowDatePicker(false);
+  };
+
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return 'Sélectionner la date';
+    return new Date(date).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const updateFormData = <K extends keyof PatientData>(
     key: K,
-    value: PatientProfile[K]
+    value: PatientData[K]
   ) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
+  const updateEmergencyContact = (field: 'name' | 'relationship' | 'phone', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      emergencyContact: {
+        ...prev.emergencyContact!,
+        [field]: value
+      }
+    }));
+  };
+
   const handleSubmit = async () => {
-    const requiredFields: (keyof PatientProfile)[] = [
-      'nom',
-      'prenom',
-      'sexe',
-      'date_naissance',
-      'type_de_drepanocytose',
-      'groupe_sanguin_rhesus',
+    const requiredFields: (keyof PatientData)[] = [
+      'lastName',
+      'firstName',
+      'sex',
+      'dateOfDiagnosis',
+      'ageAtDiagnosis',
+      'circumstancesOfDiagnosis',
+      'uniqueId',
+      'birthOrderInSiblings',
+      'numberOfSickleCellInFamily',
+      'typeOfSickleCell',
+      'bloodGroup',
+      'rhesusFactor',
     ];
 
     const missing = requiredFields.filter(field => {
@@ -155,10 +205,11 @@ const CreatePatientScreen = () => {
     try {
       const patientData = {
         ...formData,
-        rang_dans_fratrie: formData.rang_dans_fratrie ? Number(formData.rang_dans_fratrie) : 0,
-        nombre_de_drepanocytaires_dans_fratrie: formData.nombre_de_drepanocytaires_dans_fratrie
-          ? Number(formData.nombre_de_drepanocytaires_dans_fratrie)
-          : 0,
+        dateOfBirth: formData.dateOfBirth,
+        dateOfDiagnosis: formData.dateOfDiagnosis,
+        emergencyContact: formData.emergencyContact,
+        previousSurgicalInterventions: formData.previousSurgicalInterventions,
+        knownAllergies: formData.knownAllergies,
       };
 
       await createPatient(patientData);
@@ -167,7 +218,7 @@ const CreatePatientScreen = () => {
         text1: 'Succès',
         text2: 'Profil patient créé avec succès',
       });
-      router.replace(`/consultation/${formData.id}`);
+      router.replace(`/consultation/${formData.uniqueId}`);
     } catch (error) {
       console.error('Error creating patient:', error);
       Toast.show({
@@ -189,7 +240,7 @@ const CreatePatientScreen = () => {
         </Text>
         <TextInput
           style={styles.input}
-          value={formData.numero_identification_unique}
+          value={formData.uniqueId}
           editable={false}
         />
 
@@ -198,8 +249,8 @@ const CreatePatientScreen = () => {
         </Text>
         <TextInput
           style={styles.input}
-          value={formData.nom}
-          onChangeText={v => updateFormData('nom', v)}
+          value={formData.lastName}
+          onChangeText={v => updateFormData('lastName', v)}
           placeholder="Nom de famille"
         />
 
@@ -208,10 +259,23 @@ const CreatePatientScreen = () => {
         </Text>
         <TextInput
           style={styles.input}
-          value={formData.prenom}
-          onChangeText={v => updateFormData('prenom', v)}
+          value={formData.firstName}
+          onChangeText={v => updateFormData('firstName', v)}
           placeholder="Prénom"
         />
+
+        <Text style={styles.label}>
+          Sexe <Text style={styles.required}>*</Text>
+        </Text>
+        <Picker
+          selectedValue={formData.sex}
+          onValueChange={v => updateFormData('sex', v)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Male" value="Male" />
+          <Picker.Item label="Female" value="Female" />
+        </Picker>
 
         <Text style={styles.label}>
           Date de naissance <Text style={styles.required}>*</Text>
@@ -221,74 +285,152 @@ const CreatePatientScreen = () => {
           onPress={() => setShowDatePicker(true)}
         >
           <Text style={styles.dateText}>
-            {formData.date_naissance
-              ? new Date(formData.date_naissance).toLocaleDateString('fr-FR')
+            {formData.dateOfBirth
+              ? new Date(formData.dateOfBirth).toLocaleDateString('fr-FR')
               : 'Sélectionner la date'}
           </Text>
         </TouchableOpacity>
         {showDatePicker && (
-          <DateTimePicker
-            value={
-              formData.date_naissance
-                ? new Date(formData.date_naissance)
-                : new Date()
-            }
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) {
-                updateFormData('date_naissance', selectedDate.toISOString());
-              }
-            }}
-          />
+          <Modal transparent visible={showDatePicker} animationType="slide">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.datePickerHeader}>
+                  <TouchableOpacity onPress={() => setShowDatePicker(false)} style={styles.datePickerButton}>
+                    <Text style={styles.datePickerButtonText}>Annuler</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.datePickerTitle}>Sélectionner une date</Text>
+                  <TouchableOpacity onPress={() => setShowDatePicker(false)} style={styles.datePickerButton}>
+                    <Text style={styles.datePickerButtonTextConfirm}>Confirmer</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.datePickerMonthYear}>
+                  <Picker
+                    selectedValue={(formData.dateOfBirth?.getMonth() || new Date().getMonth()).toString()}
+                    onValueChange={(value) => {
+                      const newDate = new Date(formData.dateOfBirth || new Date());
+                      newDate.setMonth(parseInt(value));
+                      updateFormData('dateOfBirth', newDate);
+                    }}
+                    style={styles.monthPicker}
+                  >
+                    {['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'].map((month, index) => (
+                      <Picker.Item key={month} label={month} value={index.toString()} />
+                    ))}
+                  </Picker>
+                  <Picker
+                    selectedValue={(formData.dateOfBirth?.getFullYear() || new Date().getFullYear()).toString()}
+                    onValueChange={(value) => {
+                      const newDate = new Date(formData.dateOfBirth || new Date());
+                      newDate.setFullYear(parseInt(value));
+                      updateFormData('dateOfBirth', newDate);
+                    }}
+                    style={styles.yearPicker}
+                  >
+                    {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - 50 + i).map(year => (
+                      <Picker.Item key={year} label={year.toString()} value={year.toString()} />
+                    ))}
+                  </Picker>
+                </View>
+
+                <View style={styles.daysOfWeek}>
+                  {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map(day => (
+                    <Text key={day} style={styles.dayOfWeekText}>{day}</Text>
+                  ))}
+                </View>
+
+                <View style={styles.daysGrid}>
+                  {(() => {
+                    const year = formData.dateOfBirth?.getFullYear() || new Date().getFullYear();
+                    const month = formData.dateOfBirth?.getMonth() || new Date().getMonth();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const firstDay = new Date(year, month, 1).getDay();
+                    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+                    const emptyDays = Array.from({ length: firstDay }, (_, i) => null);
+
+                    return (
+                      <>
+                        {emptyDays.map((_, index) => (
+                          <View key={`empty-${index}`} style={styles.emptyDay} />
+                        ))}
+                        {days.map(day => (
+                          <TouchableOpacity
+                            key={day}
+                            style={[
+                              styles.dayButton,
+                              formData.dateOfBirth?.getDate() === day && formData.dateOfBirth?.getMonth() === month && formData.dateOfBirth?.getFullYear() === year
+                                ? styles.selectedDay
+                                : styles.normalDay
+                            ]}
+                            onPress={() => {
+                              const newDate = new Date(formData.dateOfBirth || new Date());
+                              newDate.setDate(day);
+                              updateFormData('dateOfBirth', newDate);
+                            }}
+                          >
+                            <Text style={[
+                              styles.dayText,
+                              formData.dateOfBirth?.getDate() === day && formData.dateOfBirth?.getMonth() === month && formData.dateOfBirth?.getFullYear() === year
+                                ? styles.selectedDayText
+                                : styles.normalDayText
+                            ]}>
+                              {day}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </>
+                    );
+                  })()}
+                </View>
+              </View>
+            </View>
+          </Modal>
         )}
 
         <Text style={styles.label}>Âge</Text>
         <TextInput
           style={styles.input}
-          value={formData.age}
+          value={formData.age?.toString()}
           editable={false}
           placeholder="Calculé automatiquement"
         />
 
         <Text style={styles.label}>
-          Sexe <Text style={styles.required}>*</Text>
+          Âge au diagnostic <Text style={styles.required}>*</Text>
         </Text>
         <Picker
-          selectedValue={formData.sexe}
-          onValueChange={v => updateFormData('sexe', v)}
+          selectedValue={formData.ageAtDiagnosis}
+          onValueChange={v => updateFormData('ageAtDiagnosis', v)}
           style={styles.picker}
         >
           <Picker.Item label="--Sélectionner--" value="" />
-          <Picker.Item label="Masculin" value="Masculin" />
-          <Picker.Item label="Féminin" value="Féminin" />
+          <Picker.Item label="At birth" value="At birth" />
+          <Picker.Item label="0-3 months" value="0-3 months" />
+          <Picker.Item label="4-6 months" value="4-6 months" />
+          <Picker.Item label="7-12 months" value="7-12 months" />
+          <Picker.Item label="2-3 years" value="2-3 years" />
+          <Picker.Item label="4-5 years" value="4-5 years" />
         </Picker>
 
-        <Text style={styles.label}>Âge au diagnostic</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.age_diagnostic}
-          onChangeText={v => updateFormData('age_diagnostic', v)}
-          placeholder="Ex: À la naissance, 6 mois..."
-        />
-
-        <Text style={styles.label}>Circonstances du diagnostic</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.circonstances_du_diagnostic}
-          onChangeText={v => updateFormData('circonstances_du_diagnostic', v)}
-          placeholder="Ex: Dépistage néonatal, crise douloureuse..."
-          multiline
-          numberOfLines={3}
-        />
+        <Text style={styles.label}>
+          Circonstances du diagnostic <Text style={styles.required}>*</Text>
+        </Text>
+        <Picker
+          selectedValue={formData.circumstancesOfDiagnosis}
+          onValueChange={v => updateFormData('circumstancesOfDiagnosis', v)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Neonatal diagnosis" value="Neonatal diagnosis" />
+          <Picker.Item label="Diagnosis from siblings" value="Diagnosis from siblings" />
+        </Picker>
 
         <Text style={styles.label}>
           Type de drépanocytose <Text style={styles.required}>*</Text>
         </Text>
         <Picker
-          selectedValue={formData.type_de_drepanocytose}
-          onValueChange={v => updateFormData('type_de_drepanocytose', v)}
+          selectedValue={formData.typeOfSickleCell}
+          onValueChange={v => updateFormData('typeOfSickleCell', v)}
           style={styles.picker}
         >
           <Picker.Item label="--Sélectionner--" value="" />
@@ -296,15 +438,15 @@ const CreatePatientScreen = () => {
           <Picker.Item label="SC" value="SC" />
           <Picker.Item label="Sβ⁰" value="Sβ⁰" />
           <Picker.Item label="Sβ⁺" value="Sβ⁺" />
-          <Picker.Item label="Autre" value="Autre" />
+          <Picker.Item label="Other" value="Other" />
         </Picker>
 
         <Text style={styles.label}>
-          Groupe sanguin / Rhésus <Text style={styles.required}>*</Text>
+          Groupe sanguin <Text style={styles.required}>*</Text>
         </Text>
         <Picker
-          selectedValue={formData.groupe_sanguin_rhesus}
-          onValueChange={v => updateFormData('groupe_sanguin_rhesus', v)}
+          selectedValue={formData.bloodGroup}
+          onValueChange={v => updateFormData('bloodGroup', v)}
           style={styles.picker}
         >
           <Picker.Item label="--Sélectionner--" value="" />
@@ -313,20 +455,36 @@ const CreatePatientScreen = () => {
           ))}
         </Picker>
 
-        <Text style={styles.label}>Région</Text>
+        <Text style={styles.label}>
+          Rhésus <Text style={styles.required}>*</Text>
+        </Text>
         <Picker
-          selectedValue={formData.region}
-          onValueChange={v => updateFormData('region', v)}
+          selectedValue={formData.rhesusFactor}
+          onValueChange={v => updateFormData('rhesusFactor', v)}
           style={styles.picker}
         >
           <Picker.Item label="--Sélectionner--" value="" />
-          {[
-            'Centre', 'Littoral', 'Ouest', 'Nord-Ouest', 'Sud-Ouest',
-            'Est', 'Nord', 'Adamaoua', 'Extrême-Nord', 'Sud'
-          ].map(r => (
-            <Picker.Item key={r} label={r} value={r} />
-          ))}
+          <Picker.Item label="Positive" value="Positive" />
+          <Picker.Item label="Negative" value="Negative" />
         </Picker>
+
+        <Text style={styles.label}>Rang dans la fratrie <Text style={styles.required}>*</Text></Text>
+        <TextInput
+          style={styles.input}
+          value={formData.birthOrderInSiblings.toString()}
+          onChangeText={v => updateFormData('birthOrderInSiblings', parseInt(v) || 1)}
+          placeholder="1, 2, 3..."
+          keyboardType="numeric"
+        />
+
+        <Text style={styles.label}>Nombre de drépanocytaires dans la famille <Text style={styles.required}>*</Text></Text>
+        <TextInput
+          style={styles.input}
+          value={formData.numberOfSickleCellInFamily.toString()}
+          onChangeText={v => updateFormData('numberOfSickleCellInFamily', parseInt(v) || 0)}
+          placeholder="0, 1, 2..."
+          keyboardType="numeric"
+        />
       </View>
 
       {/* Coordonnées */}
@@ -336,27 +494,45 @@ const CreatePatientScreen = () => {
         <Text style={styles.label}>Quartier</Text>
         <TextInput
           style={styles.input}
-          value={formData.quartier}
-          onChangeText={v => updateFormData('quartier', v)}
+          value={formData.neighborhood || ''}
+          onChangeText={v => updateFormData('neighborhood', v)}
           placeholder="Nom du quartier"
         />
 
         <Text style={styles.label}>Lieu-dit</Text>
         <TextInput
           style={styles.input}
-          value={formData.lieu_dit}
-          onChangeText={v => updateFormData('lieu_dit', v)}
+          value={formData.locality || ''}
+          onChangeText={v => updateFormData('locality', v)}
           placeholder="Précision d'adresse"
         />
 
         <Text style={styles.label}>Téléphone du patient</Text>
         <TextInput
           style={styles.input}
-          value={formData.telephone_patient}
-          onChangeText={v => updateFormData('telephone_patient', v)}
+          value={formData.patientPhone || ''}
+          onChangeText={v => updateFormData('patientPhone', v)}
           placeholder="Numéro de téléphone"
           keyboardType="phone-pad"
         />
+
+        <Text style={styles.label}>Lien avec le patient</Text>
+        <Picker
+          selectedValue={formData.relationshipWithPatient || ''}
+          onValueChange={v => updateFormData('relationshipWithPatient', v as any)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Father" value="Father" />
+          <Picker.Item label="Mother" value="Mother" />
+          <Picker.Item label="Grandmother" value="Grandmother" />
+          <Picker.Item label="Grandfather" value="Grandfather" />
+          <Picker.Item label="Brother" value="Brother" />
+          <Picker.Item label="Sister" value="Sister" />
+          <Picker.Item label="Uncle" value="Uncle" />
+          <Picker.Item label="Aunt" value="Aunt" />
+          <Picker.Item label="Other" value="Other" />
+        </Picker>
       </View>
 
       {/* Contact d'urgence */}
@@ -366,95 +542,155 @@ const CreatePatientScreen = () => {
         <Text style={styles.label}>Nom du contact</Text>
         <TextInput
           style={styles.input}
-          value={formData.contact_urgence_nom}
-          onChangeText={v => updateFormData('contact_urgence_nom', v)}
+          value={formData.emergencyContact?.name || ''}
+          onChangeText={v => updateEmergencyContact('name', v)}
           placeholder="Nom complet"
         />
 
         <Text style={styles.label}>Téléphone</Text>
         <TextInput
           style={styles.input}
-          value={formData.contact_urgence_telephone}
-          onChangeText={v => updateFormData('contact_urgence_telephone', v)}
+          value={formData.emergencyContact?.phone || ''}
+          onChangeText={v => updateEmergencyContact('phone', v)}
           placeholder="Numéro de téléphone"
           keyboardType="phone-pad"
         />
 
         <Text style={styles.label}>Relation avec le patient</Text>
-        <Picker
-          selectedValue={formData.contact_urgence_relation}
-          onValueChange={v => updateFormData('contact_urgence_relation', v)}
-          style={styles.picker}
-        >
-          <Picker.Item label="--Sélectionner--" value="" />
-          {['Père', 'Mère', 'Frère', 'Sœur', 'Conjoint(e)', 'Ami(e)', 'Autre'].map(r => (
-            <Picker.Item key={r} label={r} value={r} />
-          ))}
-        </Picker>
+        <TextInput
+          style={styles.input}
+          value={formData.emergencyContact?.relationship || ''}
+          onChangeText={v => updateEmergencyContact('relationship', v)}
+          placeholder="Relation"
+        />
 
         <Text style={styles.label}>Vit avec le patient</Text>
         <Picker
-          selectedValue={formData.vit_avec_le_patient ? 'Oui' : 'Non'}
-          onValueChange={v => updateFormData('vit_avec_le_patient', v === 'Oui')}
+          selectedValue={formData.livesWithPatient ? 'Oui' : 'Non'}
+          onValueChange={v => updateFormData('livesWithPatient', v === 'Oui')}
           style={styles.picker}
         >
-          <Picker.Item label="Oui" value="Oui" />
           <Picker.Item label="Non" value="Non" />
+          <Picker.Item label="Oui" value="Oui" />
         </Picker>
-
-        <Text style={styles.label}>Lien avec le patient</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.lien_avec_patient}
-          onChangeText={v => updateFormData('lien_avec_patient', v)}
-          placeholder="Préciser le lien si différent"
-        />
       </View>
 
       {/* Antécédents */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Antécédents</Text>
+        <Text style={styles.sectionTitle}>Antécédents médicaux</Text>
+
+        <Text style={styles.label}>Antécédents personnels</Text>
+        <TextInput
+          style={styles.input}
+          value={formData.personalMedicalHistory || ''}
+          onChangeText={v => updateFormData('personalMedicalHistory', v)}
+          placeholder="Antécédents personnels..."
+          multiline
+          numberOfLines={3}
+        />
 
         <Text style={styles.label}>Antécédents familiaux</Text>
         <TextInput
           style={styles.input}
-          value={formData.antecedent_familiaux}
-          onChangeText={v => updateFormData('antecedent_familiaux', v)}
+          value={formData.familyMedicalHistory || ''}
+          onChangeText={v => updateFormData('familyMedicalHistory', v)}
           placeholder="Drépanocytose dans la famille..."
           multiline
           numberOfLines={3}
         />
 
-        <Text style={styles.label}>Autres antécédents médicaux</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.autres_antecedents_medicaux}
-          onChangeText={v => updateFormData('autres_antecedents_medicaux', v)}
-          placeholder="Autres maladies chroniques..."
-          multiline
-          numberOfLines={3}
-        />
-
-        <Text style={styles.label}>Allergies connues</Text>
+        <Text style={styles.label}>VOC dans les 3 derniers mois</Text>
         <Picker
-          selectedValue={formData.allergies_connues ? 'Oui' : 'Non'}
-          onValueChange={v => updateFormData('allergies_connues', v === 'Oui')}
+          selectedValue={formData.vocLast3Months || ''}
+          onValueChange={v => updateFormData('vocLast3Months', v as any)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="None" value="None" />
+          <Picker.Item label="1" value="1" />
+          <Picker.Item label="1-2" value="1-2" />
+          <Picker.Item label="3-5" value="3-5" />
+          <Picker.Item label="More than 5" value="More than 5" />
+        </Picker>
+
+        <Text style={styles.label}>Antécédents familiaux de drépanocytose</Text>
+        <Picker
+          selectedValue={formData.familyHistory || ''}
+          onValueChange={v => updateFormData('familyHistory', v as any)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Yes" value="Yes" />
+          <Picker.Item label="No" value="No" />
+          <Picker.Item label="Unknown" value="Unknown" />
+        </Picker>
+
+        <Text style={styles.label}>Autres antécédents médicaux</Text>
+        <Picker
+          selectedValue={formData.otherMedicalHistory?.[0] || ''}
+          onValueChange={v => updateFormData('otherMedicalHistory', [v as any] as any)}
+          style={styles.picker}
+        >
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Nephropathy" value="Nephropathy" />
+          <Picker.Item label="Cardiopathy" value="Cardiopathy" />
+          <Picker.Item label="Meningitis" value="Meningitis" />
+          <Picker.Item label="Others" value="Others" />
+          <Picker.Item label="None" value="None" />
+        </Picker>
+
+        <Text style={styles.label}>Acide folique</Text>
+        <Picker
+          selectedValue={formData.folicAcid ? 'Oui' : 'Non'}
+          onValueChange={v => updateFormData('folicAcid', v === 'Oui')}
           style={styles.picker}
         >
           <Picker.Item label="Non" value="Non" />
           <Picker.Item label="Oui" value="Oui" />
         </Picker>
 
-        {formData.allergies_connues && (
+        <Text style={styles.label}>Allergies connues</Text>
+        <Picker
+          selectedValue={formData.knownAllergies?.hasAllergies ? 'Oui' : 'Non'}
+          onValueChange={v => updateFormData('knownAllergies', { hasAllergies: v === 'Oui' })}
+          style={styles.picker}
+        >
+          <Picker.Item label="Non" value="Non" />
+          <Picker.Item label="Oui" value="Oui" />
+        </Picker>
+
+        {formData.knownAllergies?.hasAllergies && (
           <>
             <Text style={styles.label}>Détails des allergies</Text>
             <TextInput
               style={styles.input}
-              value={formData.details_allergies}
-              onChangeText={v => updateFormData('details_allergies', v)}
+              value={formData.knownAllergies.details || ''}
+              onChangeText={v => updateFormData('knownAllergies', { hasAllergies: formData.knownAllergies?.hasAllergies || false, details: v })}
               placeholder="Médicaments, aliments..."
               multiline
               numberOfLines={3}
+            />
+          </>
+        )}
+
+        <Text style={styles.label}>Interventions chirurgicales</Text>
+        <Picker
+          selectedValue={formData.previousSurgicalInterventions?.hasInterventions ? 'Oui' : 'Non'}
+          onValueChange={v => updateFormData('previousSurgicalInterventions', { hasInterventions: v === 'Oui' })}
+          style={styles.picker}
+        >
+          <Picker.Item label="Non" value="Non" />
+          <Picker.Item label="Oui" value="Oui" />
+        </Picker>
+
+        {formData.previousSurgicalInterventions?.hasInterventions && (
+          <>
+            <Text style={styles.label}>Cause de la dernière intervention</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.previousSurgicalInterventions.cause || ''}
+              onChangeText={v => updateFormData('previousSurgicalInterventions', { hasInterventions: formData.previousSurgicalInterventions?.hasInterventions || false, cause: v })}
+              placeholder="Cause de l'intervention"
             />
           </>
         )}
@@ -464,101 +700,61 @@ const CreatePatientScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Informations sociales</Text>
 
-        <Text style={styles.label}>Patient référé</Text>
-        <Picker
-          selectedValue={formData.patient_refere ? 'Oui' : 'Non'}
-          onValueChange={v => updateFormData('patient_refere', v === 'Oui')}
-          style={styles.picker}
-        >
-          <Picker.Item label="Non" value="Non" />
-          <Picker.Item label="Oui" value="Oui" />
-        </Picker>
-
-        {formData.patient_refere && (
-          <>
-            <Text style={styles.label}>Référé de</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.patient_refere_de}
-              onChangeText={v => updateFormData('patient_refere_de', v)}
-              placeholder="Structure de provenance"
-            />
-
-            <Text style={styles.label}>Référé pour</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.patient_refere_pour}
-              onChangeText={v => updateFormData('patient_refere_pour', v)}
-              placeholder="Raison du référencement"
-            />
-          </>
-        )}
-
         <Text style={styles.label}>Appartient à un groupe</Text>
         <Picker
-          selectedValue={formData.appartient_a_groupe ? 'Oui' : 'Non'}
-          onValueChange={v => updateFormData('appartient_a_groupe', v === 'Oui')}
+          selectedValue={formData.belongsToGroup ? 'Oui' : 'Non'}
+          onValueChange={v => updateFormData('belongsToGroup', v === 'Oui')}
           style={styles.picker}
         >
           <Picker.Item label="Non" value="Non" />
           <Picker.Item label="Oui" value="Oui" />
         </Picker>
 
-        {formData.appartient_a_groupe && (
+        {formData.belongsToGroup && (
           <>
             <Text style={styles.label}>Nom du groupe</Text>
             <TextInput
               style={styles.input}
-              value={formData.nom_du_groupe}
-              onChangeText={v => updateFormData('nom_du_groupe', v)}
+              value={formData.groupName || ''}
+              onChangeText={v => updateFormData('groupName', v)}
               placeholder="Nom du groupe ou association"
             />
           </>
         )}
 
-        <Text style={styles.label}>Rang dans la fratrie</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.rang_dans_fratrie}
-          onChangeText={v => updateFormData('rang_dans_fratrie', v)}
-          placeholder="Ex: 1, 2, 3..."
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.label}>Nombre de drépanocytaires dans la fratrie</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.nombre_de_drepanocytaires_dans_fratrie}
-          onChangeText={v => updateFormData('nombre_de_drepanocytaires_dans_fratrie', v)}
-          placeholder="Ex: 0, 1, 2..."
-          keyboardType="numeric"
-        />
-
         <Text style={styles.label}>Assurance</Text>
         <Picker
-          selectedValue={formData.assurance}
-          onValueChange={v => updateFormData('assurance', v)}
+          selectedValue={formData.insurance}
+          onValueChange={v => updateFormData('insurance', v)}
           style={styles.picker}
         >
           <Picker.Item label="--Sélectionner--" value="" />
           <Picker.Item label="CNPS" value="CNPS" />
           <Picker.Item label="CNAS" value="CNAS" />
-          <Picker.Item label="Privée" value="Privée" />
-          <Picker.Item label="Aucune" value="Aucune" />
-          <Picker.Item label="Autre" value="Autre" />
+          <Picker.Item label="Private" value="Private" />
+          <Picker.Item label="None" value="None" />
+          <Picker.Item label="Others" value="Others" />
         </Picker>
 
-        {formData.assurance === 'Autre' && (
+        {formData.insurance === 'Others' && (
           <>
             <Text style={styles.label}>Préciser l'assurance</Text>
             <TextInput
               style={styles.input}
-              value={formData.insurance_other}
-              onChangeText={v => updateFormData('insurance_other', v)}
+              value={formData.insuranceDetails || ''}
+              onChangeText={v => updateFormData('insuranceDetails', v)}
               placeholder="Nom de l'assurance"
             />
           </>
         )}
+
+        <Text style={styles.label}>Vaccins à la naissance</Text>
+        <TextInput
+          style={styles.input}
+          value={formData.vaccinesAtBirth || ''}
+          onChangeText={v => updateFormData('vaccinesAtBirth', v)}
+          placeholder="Vaccins administrés à la naissance"
+        />
       </View>
 
       {/* Submit */}
@@ -653,6 +849,108 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    minHeight: 400,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  datePickerButton: {
+    padding: 10,
+  },
+  datePickerButtonText: {
+    color: '#666',
+    fontSize: 16,
+  },
+  datePickerButtonTextConfirm: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  datePickerMonthYear: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  monthPicker: {
+    flex: 1,
+    height: 40,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  yearPicker: {
+    flex: 1,
+    height: 40,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  daysOfWeek: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+  },
+  dayOfWeekText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: 'bold',
+  },
+  daysGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+  },
+  emptyDay: {
+    width: 40,
+    height: 40,
+  },
+  dayButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+  },
+  selectedDay: {
+    backgroundColor: '#007AFF',
+  },
+  normalDay: {
+    backgroundColor: 'transparent',
+  },
+  dayText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  selectedDayText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  normalDayText: {
+    color: '#333',
   },
 });
 

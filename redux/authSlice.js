@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   token: null,
+  iv: null,
   isAuthenticated: false,
   user: null,
 };
@@ -13,12 +14,14 @@ const authSlice = createSlice({
     setCredentials(state, action) {
       console.log("authSlice: Setting credentials", action.payload);
       state.token = action.payload.token;
+      state.iv = action.payload.iv;
       state.user = action.payload.user;
       state.isAuthenticated = !!action.payload.token;
     },
     clearCredentials(state) {
       console.log("authSlice: Clearing credentials");
       state.token = null;
+      state.iv = null;
       state.isAuthenticated = false;
       state.user = null;
     },

@@ -16,12 +16,17 @@ import {
   Syringe,
   Download,
   Edit,
+  Trash2,
 } from 'lucide-react-native';
+import PatientUpdateModal from '@/components/patient-update-modal';
+import PatientDeleteModal from '@/components/patient-delete-modal';
 import {
   getPatientById,
   getConsultationsByPatientId,
   getFollowUpsByPatientId,
   getVaccinationRecordByPatientId,
+  updatePatient,
+  deletePatient,
   type PatientProfile,
   type ConsultationData,
   type FollowUpData,
@@ -43,6 +48,9 @@ const PatientProfileScreen = () => {
   const [vaccination, setVaccination] = useState<VaccinationRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadPatientData();
@@ -115,11 +123,42 @@ const PatientProfileScreen = () => {
     }
   };
 
+  const handleUpdatePatient = async (updatedPatient: PatientProfile) => {
+    if (!id) return;
+
+    try {
+      await updatePatient(id, updatedPatient);
+      setPatient(updatedPatient);
+      setShowUpdateModal(false);
+      Alert.alert('Succès', 'Les informations du patient ont été mises à jour avec succès!');
+    } catch (error) {
+      console.error('Error updating patient:', error);
+      Alert.alert('Erreur', 'Impossible de mettre à jour les informations du patient');
+    }
+  };
+
+  const handleDeletePatient = async () => {
+    if (!id) return;
+
+    setDeleting(true);
+    try {
+      await deletePatient(id);
+      Alert.alert('Succès', 'Le patient a été supprimé avec succès!');
+      router.replace('/tabs/index' as any);
+    } catch (error) {
+      console.error('Error deleting patient:', error);
+      Alert.alert('Erreur', 'Impossible de supprimer le patient');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const calculateProgress = (): number => {
     const totalMonths = 5 * 12;
     const expectedFollowUps = Math.floor(totalMonths / 3);
     const completedFollowUps = followUps.length;
-    return Math.min((completedFollowUps / expectedFollowUps) * 100, 100);
+    const progress = Math.min((completedFollowUps / expectedFollowUps) * 100, 100);
+    return Math.round(progress);
   };
 
   if (loading) {
@@ -165,26 +204,41 @@ const PatientProfileScreen = () => {
       <View style={styles.progressSection}>
         <Text style={styles.progressTitle}>Suivi du traitement</Text>
         <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: `${progress}%`,
+                backgroundColor: progress >= 80 ? '#28a745' :
+                               progress >= 50 ? '#ffc107' : '#dc3545'
+              }
+            ]}
+          />
         </View>
         <Text style={styles.progressText}>
-          {followUps.length} suivis effectués • {Math.round(progress)}% complété
+          {followUps.length} suivis effectués • {progress}% complété
         </Text>
       </View>
 
       <View style={styles.quickStats}>
         <View style={styles.statItem}>
-          <FileText size={24} color="#007bff" />
+          <View style={styles.statIconContainer}>
+            <FileText size={24} color="#007bff" />
+          </View>
           <Text style={styles.statValue}>{consultations.length}</Text>
           <Text style={styles.statLabel}>Consultations</Text>
         </View>
         <View style={styles.statItem}>
-          <Activity size={24} color="#28a745" />
+          <View style={styles.statIconContainer}>
+            <Activity size={24} color="#28a745" />
+          </View>
           <Text style={styles.statValue}>{followUps.length}</Text>
           <Text style={styles.statLabel}>Suivis</Text>
         </View>
         <View style={styles.statItem}>
-          <Syringe size={24} color="#ffc107" />
+          <View style={styles.statIconContainer}>
+            <Syringe size={24} color="#ffc107" />
+          </View>
           <Text style={styles.statValue}>{vaccination ? '1' : '0'}</Text>
           <Text style={styles.statLabel}>Vaccinations</Text>
         </View>
@@ -222,7 +276,7 @@ const PatientProfileScreen = () => {
       </View>
 
       <View style={styles.infoSection}>
-        <Text style={styles.sectionTitle}>Contact d\'urgence</Text>
+        <Text style={styles.sectionTitle}>Contact d&apos;urgence</Text>
         <Text style={styles.infoText}>{patient.contact_urgence_nom || 'N/A'}</Text>
         <Text style={styles.infoText}>
           {patient.contact_urgence_relation || 'N/A'} • {patient.contact_urgence_telephone || 'N/A'}
@@ -284,21 +338,51 @@ const PatientProfileScreen = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: '#17a2b8' }]}
+          onPress={() => setShowUpdateModal(true)}
+        >
+          <Edit size={20} color="white" />
+          <Text style={styles.actionButtonText}>Modifier patient</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: '#007bff' }]}
           onPress={handleExportDocument}
         >
           <Download size={20} color="white" />
           <Text style={styles.actionButtonText}>Exporter dossier (Word)</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: '#dc3545' }]}
+          onPress={() => setShowDeleteModal(true)}
+        >
+          <Trash2 size={20} color="white" />
+          <Text style={styles.actionButtonText}>Supprimer patient</Text>
+        </TouchableOpacity>
       </View>
+
+      <PatientUpdateModal
+        visible={showUpdateModal}
+        patient={patient}
+        onClose={() => setShowUpdateModal(false)}
+        onUpdate={handleUpdatePatient}
+      />
+
+      <PatientDeleteModal
+        visible={showDeleteModal}
+        patient={patient}
+        onClose={() => setShowDeleteModal(false)}
+        onDelete={handleDeletePatient}
+        loading={deleting}
+      />
     </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f0f2f5',
   },
   loadingContainer: {
     flex: 1,
@@ -313,105 +397,143 @@ const styles = StyleSheet.create({
     backgroundColor: '#dc3545',
     padding: 24,
     alignItems: 'center',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   patientIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   patientName: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 4,
+    marginBottom: 6,
+    textAlign: 'center',
   },
   patientId: {
-    fontSize: 14,
+    fontSize: 16,
     color: 'rgba(255,255,255,0.9)',
+    textAlign: 'center',
+    fontWeight: '500',
   },
   progressSection: {
     backgroundColor: 'white',
-    padding: 16,
+    padding: 20,
     margin: 16,
-    borderRadius: 12,
+    marginHorizontal: 16,
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   progressTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#495057',
-    marginBottom: 12,
+    color: '#2c3e50',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   progressBar: {
-    height: 12,
+    height: 16,
     backgroundColor: '#e9ecef',
-    borderRadius: 6,
+    borderRadius: 8,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   progressFill: {
     height: '100%',
     backgroundColor: '#28a745',
-    borderRadius: 6,
+    borderRadius: 8,
+    width: '0%',
   },
   progressText: {
-    fontSize: 14,
-    color: '#6c757d',
+    fontSize: 16,
+    color: '#495057',
+    textAlign: 'center',
+    fontWeight: '600',
   },
   quickStats: {
     flexDirection: 'row',
     padding: 16,
     paddingTop: 0,
     gap: 12,
+    marginHorizontal: 16,
   },
   statItem: {
     flex: 1,
     backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#f0f2f5',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#495057',
+    color: '#2c3e50',
     marginTop: 8,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6c757d',
     marginTop: 4,
+    fontWeight: '500',
+    textAlign: 'center',
   },
-  infoSection: {
-    backgroundColor: 'white',
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 12,
+  statIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
+  },
+  infoSection: {
+    backgroundColor: 'white',
+    padding: 20,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#495057',
-    marginBottom: 12,
+    color: '#2c3e50',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   infoGrid: {
     flexDirection: 'row',
@@ -423,42 +545,51 @@ const styles = StyleSheet.create({
     minWidth: '45%',
   },
   infoLabel: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6c757d',
-    marginBottom: 4,
+    marginBottom: 6,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   infoValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#495057',
+    color: '#2c3e50',
+    paddingVertical: 4,
   },
   infoText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#495057',
-    marginBottom: 8,
+    marginBottom: 12,
+    lineHeight: 20,
   },
   actions: {
     padding: 16,
     gap: 12,
     paddingBottom: 32,
+    marginHorizontal: 16,
   },
   actionButton: {
     flexDirection: 'row',
-    padding: 16,
-    borderRadius: 12,
+    padding: 18,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowRadius: 8,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   actionButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: 'white',
+    letterSpacing: 0.5,
   },
 });
 

@@ -27,6 +27,7 @@ const SearchScreen = () => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [patientStats, setPatientStats] = useState<Record<string, { consultations: number; followUps: number }>>({});
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     loadPatients();
@@ -39,6 +40,7 @@ const SearchScreen = () => {
   const loadPatients = async () => {
     try {
       setLoading(true);
+      setStatsLoading(true);
       const patients = await getPatients();
       setAllPatients(patients);
       
@@ -56,6 +58,7 @@ const SearchScreen = () => {
       console.error('Error loading patients:', error);
     } finally {
       setLoading(false);
+      setStatsLoading(false);
     }
   };
 
@@ -81,13 +84,30 @@ const SearchScreen = () => {
   };
 
   const renderPatientCard = (patient: PatientProfile) => {
-    const stats = patientStats[patient.id] || { consultations: 0, followUps: 0 };
+    console.log('Rendering patient card:', patient);
+    console.log('Patient object keys:', Object.keys(patient));
+    console.log('Patient id:', patient.id);
+    
+    // Try to find the correct ID field
+    const patientId = patient.id;
+    console.log('Using patient ID:', patientId);
+    
+    const stats = statsLoading || !patientStats[patient.id]
+      ? { consultations: 0, followUps: 0 }
+      : patientStats[patient.id];
     
     return (
       <TouchableOpacity
         key={patient.id}
         style={styles.patientCard}
-        onPress={() => router.push(`/patient/${patient.id}` as any)}
+        onPress={() => {
+          console.log('Main card navigation - Patient ID:', patientId);
+          if (patientId) {
+            router.push(`/patient/${patientId}`);
+          } else {
+            console.error('Patient ID is undefined in main card');
+          }
+        }}
       >
         <View style={styles.patientCardHeader}>
           <View style={styles.avatarContainer}>
@@ -123,7 +143,14 @@ const SearchScreen = () => {
           </Text>
           <TouchableOpacity
             style={styles.viewButton}
-            onPress={() => router.push(`/patient/${patient.id}` as any)}
+            onPress={() => {
+              console.log('Navigating to patient with ID:', patientId);
+              if (patientId) {
+                router.push(`/patient/${patientId}`);
+              } else {
+                console.error('Patient ID is undefined');
+              }
+            }}
           >
             <Text style={styles.viewButtonText}>Voir profil →</Text>
           </TouchableOpacity>
