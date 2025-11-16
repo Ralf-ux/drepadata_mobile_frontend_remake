@@ -5,6 +5,10 @@ export const register = (userData) => post('/auth/register', userData);
 export const login = (userData) => post(`/auth/login`, userData);
 
 
+//for patients Endpoints
+export const createPatient = (patientsData) => post('/patients', patientsData);
+export const getPatients = () => get('/patients');
+
 
 export const getUsers = () => get('/users');
 export const updateUser = (id, userData) => put(`/users/${id}`, userData);

@@ -20,9 +20,14 @@ import 'react-native-get-random-values';
 =======
 >>>>>>> cd25b5d (not yet done)
 import { savePatient, type PatientProfile } from '@/utils/storage';
+import { createPatient } from '@/api/users';
+import Toast from 'react-native-toast-message';
+import { useSelector } from 'react-redux';
+import { selectIsAuthenticated } from '@/redux/authSlice';
 
 const CreatePatientScreen = () => {
   const router = useRouter();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
 
   /* ---------- 12 MANDATORY FIELDS ---------- */
   const [formData, setFormData] = useState({
@@ -34,6 +39,7 @@ const CreatePatientScreen = () => {
     numero_identification_unique: `P${Date.now()}`,
     nom: '',
     prenom: '',
+<<<<<<< HEAD
     sexe: '',
     date_diagnostic: '',
     age_diagnostic: '',
@@ -114,6 +120,43 @@ const CreatePatientScreen = () => {
     allergies_details: '',
 
 >>>>>>> cd25b5d (not yet done)
+=======
+    sexe: '', // 'Male', 'Female'
+    date_diagnostic: '', // Date
+    age_diagnostic: '', // 'At birth', '0-3 months', '4-6 months', '7-12 months', '2-3 years', '4-5 years'
+    circonstances_du_diagnostic: '', // 'Neonatal diagnosis', 'Diagnosis from siblings'
+    rang_dans_fratrie: '', // Number
+    nombre_de_drepanocytaires_dans_fratrie: '', // Number
+    type_de_drepanocytose: '', // 'SS', 'SC', 'Sβ⁰', 'Sβ⁺', 'Other'
+    antecedent_personnel_medical: '', // personalMedicalHistory
+    antecedent_familiaux: '', // familyMedicalHistory
+    groupe_sanguin: '', // bloodGroup
+    facteur_rhesus: '', // rhesusFactor
+    vaccins_naissance: {} as Record<string, boolean>, // vaccinesAtBirth
+    date_de_naissance: '', // dateOfBirth
+    age: '', // age
+    relation_avec_patient: '', // relationshipWithPatient
+    quartier: '', // neighborhood
+    localite: '', // locality
+    contact_urgence_nom: '', // emergencyContact.name
+    contact_urgence_relation: '', // emergencyContact.relationship
+    contact_urgence_telephone: '', // emergencyContact.phone
+    telephone_patient: '', // patientPhone
+    vit_avec_patient: false, // livesWithPatient
+    appartient_a_un_groupe: false, // belongsToGroup
+    nom_du_groupe: '', // groupName
+    assurance: '', // insurance
+    details_assurance: '', // insuranceDetails
+    voc_trois_derniers_mois: '', // vocLast3Months
+    antecedent_familial_drepanocytose: '', // familyHistory (Yes, No, Unknown)
+    autres_antecedents_medicaux: [] as string[], // otherMedicalHistory
+    interventions_chirurgicales_anterieures: false, // previousSurgicalInterventions.hasInterventions
+    date_derniere_intervention: '', // previousSurgicalInterventions.dateOfLastIntervention
+    cause_intervention: '', // previousSurgicalInterventions.cause
+    acide_folique: false, // folicAcid
+    allergies_connues: false, // knownAllergies.hasAllergies
+    details_allergies: '', // knownAllergies.details
+>>>>>>> 777db8b (Fix: Toast ReferenceError and Access Token Required error in create-patient.tsx)
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });
@@ -160,18 +203,70 @@ const CreatePatientScreen = () => {
   };
 
   const handleSubmit = async () => {
-    const required: (keyof typeof formData)[] = [
-      'nom',
-      'prenom',
-      'sexe',
-      'date_diagnostic',
-      'age_diagnostic',
-      'circonstances_du_diagnostic',
-      'type_de_drepanocytose',
-      'groupe_sanguin_rhesus',
+    const patientData = {
+      lastName: formData.nom,
+      firstName: formData.prenom,
+      sex: formData.sexe,
+      dateOfDiagnosis: formData.date_diagnostic,
+      ageAtDiagnosis: formData.age_diagnostic,
+      circumstancesOfDiagnosis: formData.circonstances_du_diagnostic,
+      uniqueId: formData.numero_identification_unique,
+      birthOrderInSiblings: Number(formData.rang_dans_fratrie),
+      numberOfSickleCellInFamily: Number(formData.nombre_de_drepanocytaires_dans_fratrie),
+      typeOfSickleCell: formData.type_de_drepanocytose,
+      personalMedicalHistory: formData.antecedent_personnel_medical,
+      familyMedicalHistory: formData.antecedent_familiaux,
+      bloodGroup: formData.groupe_sanguin,
+      rhesusFactor: formData.facteur_rhesus,
+      vaccinesAtBirth: Object.keys(formData.vaccins_naissance).filter(key => formData.vaccins_naissance[key]).join(', '),
+      dateOfBirth: formData.date_de_naissance,
+      age: Number(formData.age),
+      relationshipWithPatient: formData.relation_avec_patient,
+      neighborhood: formData.quartier,
+      locality: formData.localite,
+      emergencyContact: {
+        name: formData.contact_urgence_nom,
+        relationship: formData.contact_urgence_relation,
+        phone: formData.contact_urgence_telephone,
+      },
+      patientPhone: formData.telephone_patient,
+      livesWithPatient: formData.vit_avec_patient,
+      belongsToGroup: formData.appartient_a_un_groupe,
+      groupName: formData.nom_du_groupe,
+      insurance: formData.assurance,
+      insuranceDetails: formData.details_assurance,
+      vocLast3Months: formData.voc_trois_derniers_mois,
+      familyHistory: formData.antecedent_familial_drepanocytose,
+      otherMedicalHistory: formData.autres_antecedents_medicaux,
+      previousSurgicalInterventions: {
+        hasInterventions: formData.interventions_chirurgicales_anterieures,
+        dateOfLastIntervention: formData.interventions_chirurgicales_anterieures ? formData.date_derniere_intervention : undefined,
+        cause: formData.interventions_chirurgicales_anterieures ? formData.cause_intervention : undefined,
+      },
+      folicAcid: formData.acide_folique,
+      knownAllergies: {
+        hasAllergies: formData.allergies_connues,
+        details: formData.allergies_connues ? formData.details_allergies : undefined,
+      },
+    };
+
+    const requiredFields: (keyof typeof patientData)[] = [
+      'lastName', 'firstName', 'sex', 'dateOfDiagnosis', 'ageAtDiagnosis',
+      'circumstancesOfDiagnosis', 'uniqueId', 'birthOrderInSiblings',
+      'numberOfSickleCellInFamily', 'typeOfSickleCell', 'bloodGroup', 'rhesusFactor'
     ];
-    const missing = required.filter(k => !formData[k]);
+
+    const missing = requiredFields.filter(key => {
+      const value = patientData[key];
+      if (typeof value === 'string') return !value.trim();
+      if (typeof value === 'number') return isNaN(value);
+      if (typeof value === 'boolean') return false; // Booleans are always "present"
+      if (value === undefined || value === null) return true;
+      return false;
+    });
+
     if (missing.length) {
+<<<<<<< HEAD
       Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires');
 =======
     // Permanent fields validation
@@ -183,10 +278,18 @@ const CreatePatientScreen = () => {
         !formData.groupe_sanguin_rhesus) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires (informations permanentes)');
 >>>>>>> cd25b5d (not yet done)
+=======
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: `Veuillez remplir tous les champs obligatoires: ${missing.join(', ')}`,
+      });
+>>>>>>> 777db8b (Fix: Toast ReferenceError and Access Token Required error in create-patient.tsx)
       return;
     }
 
     try {
+<<<<<<< HEAD
       await savePatient(formData as unknown as PatientProfile);
 =======
       await savePatient(formData);
@@ -210,6 +313,23 @@ const CreatePatientScreen = () => {
       );
     } catch {
       Alert.alert('Erreur', 'Impossible de créer le profil');
+=======
+      // Assuming savePatient can handle the new structure or we'll adjust it later
+      await createPatient(patientData);
+      Toast.show({
+        type: 'success',
+        text1: 'Succès',
+        text2: 'Profil patient créé avec succès',
+      });
+      router.replace(`/consultation/${formData.id}` as any);
+    } catch (error) {
+      console.error('Error creating patient:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: 'Impossible de créer le profil',
+      });
+>>>>>>> 777db8b (Fix: Toast ReferenceError and Access Token Required error in create-patient.tsx)
     }
   };
 
@@ -217,7 +337,7 @@ const CreatePatientScreen = () => {
   return (
     <ScrollView style={styles.container} contentInsetAdjustmentBehavior="automatic">
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Informations d'identification</Text>
+        <Text style={styles.sectionTitle}>Informations d&apos;identification</Text>
 
         <Label required>Nom</Label>
         <TextInput style={styles.input} value={formData.nom} onChangeText={v => update('nom', v)} placeholder="Nom de famille" />
@@ -228,8 +348,8 @@ const CreatePatientScreen = () => {
         <Label required>Sexe</Label>
         <Picker selectedValue={formData.sexe} onValueChange={v => update('sexe', v)} style={styles.picker}>
           <Picker.Item label="--Sélectionner--" value="" />
-          <Picker.Item label="Masculin" value="Masculin" />
-          <Picker.Item label="Féminin" value="Féminin" />
+          <Picker.Item label="Male" value="Male" />
+          <Picker.Item label="Female" value="Female" />
         </Picker>
 
         <Label required>Date du diagnostic</Label>
@@ -319,25 +439,24 @@ const CreatePatientScreen = () => {
         )}
 
         <Label required>Âge au diagnostic</Label>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={formData.age_diagnostic}
-          onChangeText={v => update('age_diagnostic', v)}
-          placeholder="ex. 3"
-        />
+        <Picker selectedValue={formData.age_diagnostic} onValueChange={v => update('age_diagnostic', v)} style={styles.picker}>
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="At birth" value="At birth" />
+          <Picker.Item label="0-3 months" value="0-3 months" />
+          <Picker.Item label="4-6 months" value="4-6 months" />
+          <Picker.Item label="7-12 months" value="7-12 months" />
+          <Picker.Item label="2-3 years" value="2-3 years" />
+          <Picker.Item label="4-5 years" value="4-5 years" />
+        </Picker>
 
         <Label required>Circonstances du diagnostic</Label>
-        <TextInput
-          style={styles.input}
-          multiline
-          numberOfLines={3}
-          value={formData.circonstances_du_diagnostic}
-          onChangeText={v => update('circonstances_du_diagnostic', v)}
-          placeholder="Décrire les circonstances"
-        />
+        <Picker selectedValue={formData.circonstances_du_diagnostic} onValueChange={v => update('circonstances_du_diagnostic', v)} style={styles.picker}>
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Neonatal diagnosis" value="Neonatal diagnosis" />
+          <Picker.Item label="Diagnosis from siblings" value="Diagnosis from siblings" />
+        </Picker>
 
-        <Label required>Type de drépanocytose</Label>
+        <Label>Type de drépanocytose</Label>
         <Picker selectedValue={formData.type_de_drepanocytose} onValueChange={v => update('type_de_drepanocytose', v)} style={styles.picker}>
 =======
         <Text style={styles.label}>Âge</Text>
@@ -464,31 +583,48 @@ const CreatePatientScreen = () => {
           <Picker.Item label="SC" value="SC" />
           <Picker.Item label="Sβ⁰" value="Sβ⁰" />
           <Picker.Item label="Sβ⁺" value="Sβ⁺" />
-          <Picker.Item label="Autre" value="Autre" />
+          <Picker.Item label="Other" value="Other" />
         </Picker>
 
-        <Label>Antécédents familiaux</Label>
+        <Label>Antécédents médicaux personnels</Label>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={3}
+          value={formData.antecedent_personnel_medical}
+          onChangeText={v => update('antecedent_personnel_medical', v)}
+          placeholder="Antécédents médicaux personnels"
+        />
+
+        <Label>Antécédents médicaux familiaux</Label>
         <TextInput
           style={styles.input}
           multiline
           numberOfLines={3}
           value={formData.antecedent_familiaux}
           onChangeText={v => update('antecedent_familiaux', v)}
-          placeholder="Antécédents familiaux de drépanocytose"
+          placeholder="Antécédents médicaux familiaux"
         />
 
-        <Label required>Groupe sanguin / Rhésus</Label>
-        <Picker selectedValue={formData.groupe_sanguin_rhesus} onValueChange={v => update('groupe_sanguin_rhesus', v)} style={styles.picker}>
+        <Label required>Groupe sanguin</Label>
+        <Picker selectedValue={formData.groupe_sanguin} onValueChange={v => update('groupe_sanguin', v)} style={styles.picker}>
           <Picker.Item label="--Sélectionner--" value="" />
           {['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map(g => (
             <Picker.Item key={g} label={g} value={g} />
           ))}
         </Picker>
 
-        <Label>Rang dans la fratrie</Label>
-        <Picker selectedValue={formData.rang_dans_fratrie} onValueChange={v => update('rang_dans_fratrie', v)} style={styles.picker}>
+        <Label required>Facteur Rhésus</Label>
+        <Picker selectedValue={formData.facteur_rhesus} onValueChange={v => update('facteur_rhesus', v)} style={styles.picker}>
           <Picker.Item label="--Sélectionner--" value="" />
-          {[...Array(12)].map((_, i) => (
+          <Picker.Item label="Positive" value="Positive" />
+          <Picker.Item label="Negative" value="Negative" />
+        </Picker>
+
+        <Label>Rang dans la fratrie</Label>
+        <Picker selectedValue={formData.rang_dans_fratrie} onValueChange={v => update('rang_dans_fratrie', Number(v))} style={styles.picker}>
+          <Picker.Item label="--Sélectionner--" value="" />
+          {[...Array(11)].map((_, i) => (
             <Picker.Item key={i} label={`${i + 1}`} value={`${i + 1}`} />
           ))}
         </Picker>
@@ -496,12 +632,12 @@ const CreatePatientScreen = () => {
         <Label>Nombre de drépanocytaires dans la fratrie</Label>
         <Picker
           selectedValue={formData.nombre_de_drepanocytaires_dans_fratrie}
-          onValueChange={v => update('nombre_de_drepanocytaires_dans_fratrie', v)}
+          onValueChange={v => update('nombre_de_drepanocytaires_dans_fratrie', Number(v))}
           style={styles.picker}
         >
           <Picker.Item label="--Sélectionner--" value="" />
-          {['0', '1', '2', '3', '4', '5', '6+'].map(n => (
-            <Picker.Item key={n} label={n} value={n} />
+          {[...Array(7)].map((_, i) => (
+            <Picker.Item key={i} label={`${i}`} value={`${i}`} />
           ))}
         </Picker>
 
@@ -523,8 +659,215 @@ const CreatePatientScreen = () => {
         ))}
       </View>
 
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Données démographiques</Text>
+
+        <Label>Date de naissance</Label>
+        <TouchableOpacity style={styles.dateBtn} onPress={() => setShowDatePicker(true)}>
+          <Text style={styles.dateTxt}>
+            {formData.date_de_naissance ? new Date(formData.date_de_naissance).toLocaleDateString('fr-FR') : 'Sélectionner la date'}
+          </Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={formData.date_de_naissance ? new Date(formData.date_de_naissance) : new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) update('date_de_naissance', selectedDate.toISOString());
+            }}
+          />
+        )}
+
+        <Label>Âge</Label>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={formData.age}
+          onChangeText={v => update('age', Number(v))}
+          placeholder="Âge du patient"
+        />
+
+        <Label>Lien de parenté avec le patient</Label>
+        <Picker selectedValue={formData.relation_avec_patient} onValueChange={v => update('relation_avec_patient', v)} style={styles.picker}>
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Father" value="Father" />
+          <Picker.Item label="Mother" value="Mother" />
+          <Picker.Item label="Grandmother" value="Grandmother" />
+          <Picker.Item label="Grandfather" value="Grandfather" />
+          <Picker.Item label="Brother" value="Brother" />
+          <Picker.Item label="Sister" value="Sister" />
+          <Picker.Item label="Uncle" value="Uncle" />
+          <Picker.Item label="Aunt" value="Aunt" />
+          <Picker.Item label="Other" value="Other" />
+        </Picker>
+
+        <Label>Quartier</Label>
+        <TextInput style={styles.input} value={formData.quartier} onChangeText={v => update('quartier', v)} placeholder="Quartier" />
+
+        <Label>Localité</Label>
+        <TextInput style={styles.input} value={formData.localite} onChangeText={v => update('localite', v)} placeholder="Localité" />
+
+        <Label>Contact d&apos;urgence (Nom)</Label>
+        <TextInput style={styles.input} value={formData.contact_urgence_nom} onChangeText={v => update('contact_urgence_nom', v)} placeholder="Nom du contact d'urgence" />
+
+        <Label>Contact d&apos;urgence (Lien de parenté)</Label>
+        <TextInput style={styles.input} value={formData.contact_urgence_relation} onChangeText={v => update('contact_urgence_relation', v)} placeholder="Lien de parenté du contact d'urgence" />
+
+        <Label>Contact d&apos;urgence (Téléphone)</Label>
+        <TextInput style={styles.input} keyboardType="phone-pad" value={formData.contact_urgence_telephone} onChangeText={v => update('contact_urgence_telephone', v)} placeholder="Téléphone du contact d'urgence" />
+
+        <Label>Téléphone du patient</Label>
+        <TextInput style={styles.input} keyboardType="phone-pad" value={formData.telephone_patient} onChangeText={v => update('telephone_patient', v)} placeholder="Téléphone du patient" />
+
+        <Label>Vit avec le patient</Label>
+        <TouchableOpacity
+          style={styles.checkRow}
+          onPress={() => update('vit_avec_patient', !formData.vit_avec_patient)}
+        >
+          <Text style={styles.checkTxt}>Oui</Text>
+          <View style={[styles.box, formData.vit_avec_patient && styles.boxChecked]} />
+        </TouchableOpacity>
+
+        <Label>Appartient à un groupe</Label>
+        <TouchableOpacity
+          style={styles.checkRow}
+          onPress={() => update('appartient_a_un_groupe', !formData.appartient_a_un_groupe)}
+        >
+          <Text style={styles.checkTxt}>Oui</Text>
+          <View style={[styles.box, formData.appartient_a_un_groupe && styles.boxChecked]} />
+        </TouchableOpacity>
+
+        {formData.appartient_a_un_groupe && (
+          <>
+            <Label>Nom du groupe</Label>
+            <TextInput style={styles.input} value={formData.nom_du_groupe} onChangeText={v => update('nom_du_groupe', v)} placeholder="Nom du groupe" />
+          </>
+        )}
+
+        <Label>Assurance</Label>
+        <Picker selectedValue={formData.assurance} onValueChange={v => update('assurance', v)} style={styles.picker}>
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="CNPS" value="CNPS" />
+          <Picker.Item label="CNAS" value="CNAS" />
+          <Picker.Item label="Private" value="Private" />
+          <Picker.Item label="None" value="None" />
+          <Picker.Item label="Others" value="Others" />
+        </Picker>
+
+        {formData.assurance === 'Others' && (
+          <>
+            <Label>Détails de l&apos;assurance</Label>
+            <TextInput style={styles.input} value={formData.details_assurance} onChangeText={v => update('details_assurance', v)} placeholder="Détails de l'assurance" />
+          </>
+        )}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Antécédents médicaux</Text>
+
+        <Label>Crises vaso-occlusives (CVO) au cours des 3 derniers mois</Label>
+        <Picker selectedValue={formData.voc_trois_derniers_mois} onValueChange={v => update('voc_trois_derniers_mois', v)} style={styles.picker}>
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="None" value="None" />
+          <Picker.Item label="1" value="1" />
+          <Picker.Item label="1-2" value="1-2" />
+          <Picker.Item label="3-5" value="3-5" />
+          <Picker.Item label="More than 5" value="More than 5" />
+        </Picker>
+
+        <Label>Antécédents familiaux de drépanocytose</Label>
+        <Picker selectedValue={formData.antecedent_familial_drepanocytose} onValueChange={v => update('antecedent_familial_drepanocytose', v)} style={styles.picker}>
+          <Picker.Item label="--Sélectionner--" value="" />
+          <Picker.Item label="Yes" value="Yes" />
+          <Picker.Item label="No" value="No" />
+          <Picker.Item label="Unknown" value="Unknown" />
+        </Picker>
+
+        <Label>Autres antécédents médicaux</Label>
+        {['Nephropathy', 'Cardiopathy', 'Meningitis', 'Others', 'None'].map(v => (
+          <TouchableOpacity
+            key={v}
+            style={styles.checkRow}
+            onPress={() => {
+              const current = new Set(formData.autres_antecedents_medicaux);
+              if (current.has(v)) {
+                current.delete(v);
+              } else {
+                current.add(v);
+              }
+              update('autres_antecedents_medicaux', Array.from(current));
+            }}
+          >
+            <Text style={styles.checkTxt}>{v}</Text>
+            <View style={[styles.box, formData.autres_antecedents_medicaux.includes(v) && styles.boxChecked]} />
+          </TouchableOpacity>
+        ))}
+
+        <Label>Interventions chirurgicales antérieures</Label>
+        <TouchableOpacity
+          style={styles.checkRow}
+          onPress={() => update('interventions_chirurgicales_anterieures', !formData.interventions_chirurgicales_anterieures)}
+        >
+          <Text style={styles.checkTxt}>Oui</Text>
+          <View style={[styles.box, formData.interventions_chirurgicales_anterieures && styles.boxChecked]} />
+        </TouchableOpacity>
+
+        {formData.interventions_chirurgicales_anterieures && (
+          <>
+            <Label>Date de la dernière intervention</Label>
+            <TouchableOpacity style={styles.dateBtn} onPress={() => setShowDatePicker(true)}>
+              <Text style={styles.dateTxt}>
+                {formData.date_derniere_intervention ? new Date(formData.date_derniere_intervention).toLocaleDateString('fr-FR') : 'Sélectionner la date'}
+              </Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={formData.date_derniere_intervention ? new Date(formData.date_derniere_intervention) : new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) update('date_derniere_intervention', selectedDate.toISOString());
+                }}
+              />
+            )}
+
+            <Label>Cause de l&apos;intervention</Label>
+            <TextInput style={styles.input} value={formData.cause_intervention} onChangeText={v => update('cause_intervention', v)} placeholder="Cause de l'intervention" />
+          </>
+        )}
+
+        <Label>Acide folique</Label>
+        <TouchableOpacity
+          style={styles.checkRow}
+          onPress={() => update('acide_folique', !formData.acide_folique)}
+        >
+          <Text style={styles.checkTxt}>Oui</Text>
+          <View style={[styles.box, formData.acide_folique && styles.boxChecked]} />
+        </TouchableOpacity>
+
+        <Label>Allergies connues</Label>
+        <TouchableOpacity
+          style={styles.checkRow}
+          onPress={() => update('allergies_connues', !formData.allergies_connues)}
+        >
+          <Text style={styles.checkTxt}>Oui</Text>
+          <View style={[styles.box, formData.allergies_connues && styles.boxChecked]} />
+        </TouchableOpacity>
+
+        {formData.allergies_connues && (
+          <>
+            <Label>Détails des allergies</Label>
+            <TextInput style={styles.input} value={formData.details_allergies} onChangeText={v => update('details_allergies', v)} placeholder="Détails des allergies" />
+          </>
+        )}
+      </View>
+
+
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={!isAuthenticated}>
           <Text style={styles.submitBtnTxt}>Créer le profil patient</Text>
 =======
         <Text style={styles.label}>Âge au diagnostic</Text>
