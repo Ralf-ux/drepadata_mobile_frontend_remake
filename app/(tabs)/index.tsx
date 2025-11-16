@@ -11,6 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { logout } from '@/utils/authUtils';
+import Toast from 'react-native-toast-message';
 
 const { width } = Dimensions.get('window');
 
@@ -53,6 +55,25 @@ const HomeScreen = () => {
     setRefreshing(false);
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace('/(auth)/login');
+      Toast.show({
+        type: 'success',
+        text1: 'Logged Out',
+        text2: 'You have been successfully logged out.',
+      });
+    } catch (error) {
+      console.error('Logout failed:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Logout Failed',
+        text2: 'An error occurred during logout.',
+      });
+    }
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -69,6 +90,9 @@ const HomeScreen = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Tableau de bord</Text>
         <Text style={styles.headerSubtitle}>Gestion des patients drépanocytaires</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity 
@@ -194,6 +218,9 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
     backgroundColor: '#F9FAFB',
+    flexDirection: 'row', // Added for logout button
+    justifyContent: 'space-between', // Added for logout button
+    alignItems: 'center', // Added for logout button
   },
   headerTitle: {
     fontSize: 28,
@@ -204,6 +231,16 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 15,
     color: '#6B7280',
+  },
+  logoutButton: { // Added logout button style
+    backgroundColor: '#E84855',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  logoutButtonText: { // Added logout button text style
+    color: '#fff',
+    fontWeight: 'bold',
   },
   searchBar: {
     flexDirection: 'row',
