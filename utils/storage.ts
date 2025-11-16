@@ -160,10 +160,8 @@ export interface VaccinationRecord {
   id: string;
   patient_id: string;
   vaccinations: {
-    name: string;
-    date: string;
-    status: 'done' | 'due' | 'missed';
-  }[];
+    [key: string]: boolean;
+  };
   created_at: string;
   updated_at: string;
   patient_name?: string;
@@ -339,7 +337,6 @@ export const setOnboardingComplete = async (): Promise<void> => {
 };
 
 export const isOnboardingComplete = async (): Promise<boolean> => {
-  if (!isAuthenticated()) return false;
   const val = await AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETE);
   return val === 'true';
 };

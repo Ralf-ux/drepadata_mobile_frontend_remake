@@ -14,7 +14,7 @@ const authSlice = createSlice({
       console.log("authSlice: Setting credentials", action.payload);
       state.token = action.payload.token;
       state.user = action.payload.user;
-      state.isAuthenticated = true;
+      state.isAuthenticated = !!action.payload.token;
     },
     clearCredentials(state) {
       console.log("authSlice: Clearing credentials");

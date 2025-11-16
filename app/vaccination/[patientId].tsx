@@ -47,9 +47,10 @@ const PatientVaccinationScreen = () => {
     id: '',
     patient_id: patientId || '',
     patient_name: '',
-    patient_age: '',
+    patient_age: undefined,
     vaccinations: {},
-    updated_at: '',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   });
   const [refreshing, setRefreshing] = useState(false);
 
@@ -74,6 +75,7 @@ const PatientVaccinationScreen = () => {
             patient_name: `${patientData.nom} ${patientData.prenom}`,
             patient_age: patientData.age,
             vaccinations: {},
+            created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           };
         }

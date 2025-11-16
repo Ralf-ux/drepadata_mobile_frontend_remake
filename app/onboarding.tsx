@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setOnboardingComplete } from '../utils/storage';
 import { setCredentials } from '@/redux/authSlice';
@@ -55,6 +56,7 @@ const OnboardingScreen = () => {
       setCurrentSlide(currentSlide + 1);
     } else {
       await setOnboardingComplete();
+      await AsyncStorage.clear();
       store.dispatch(setCredentials({ token: null, user: null }));
       // tiny delay guarantees storage flush before navigation
       setTimeout(() => router.replace('/(auth)/login'), 50);

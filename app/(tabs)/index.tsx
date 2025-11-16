@@ -13,7 +13,10 @@ import {
   Animated,
   Platform,
 } from 'react-native';
-import { logout } from '@/utils/authUtils';
+import { store } from '@/redux/store';
+import { clearCredentials } from '@/redux/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clearAuthFromStorage } from '@/utils/authUtils';
 import Toast from 'react-native-toast-message';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Activity, FileText, Users, UserPlus } from 'lucide-react-native';
@@ -75,7 +78,7 @@ const HomeScreen = () => {
     ).length;
 
     const todayConsultations = consultations.filter(
-      c => new Date(c.date) >= todayStart
+      c => new Date(c.consultation_date) >= todayStart
     ).length;
 
     const urgentFollowUps = followUps.filter(
@@ -100,7 +103,11 @@ const HomeScreen = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      store.dispatch(clearCredentials());
+      // Add a small delay to ensure Redux state updates
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await AsyncStorage.clear();
+      await clearAuthFromStorage();
       router.replace('/(auth)/login');
       Toast.show({
         type: 'success',
@@ -202,7 +209,7 @@ const HomeScreen = () => {
         {/* Enhanced Search Bar */}
         <TouchableOpacity 
           style={styles.searchBar}
-          onPress={() => router.push('./search')}
+          onPress={() => router.push('/(tabs)/search')}
           activeOpacity={0.7}
         >
           <View style={styles.searchIconContainer}>
@@ -221,7 +228,7 @@ const HomeScreen = () => {
           <View style={styles.actionsRow}>
             <TouchableOpacity
               style={styles.actionCard}
-              onPress={() => router.push('../create-patient')}
+              onPress={() => router.push('/create-patient')}
               activeOpacity={0.85}
             >
               <LinearGradient
@@ -247,7 +254,7 @@ const HomeScreen = () => {
 
             <TouchableOpacity
               style={styles.actionCard}
-              onPress={() => router.push('./consultations')}
+              onPress={() => router.push('/(tabs)/consultations')}
               activeOpacity={0.85}
             >
               <LinearGradient
@@ -273,7 +280,7 @@ const HomeScreen = () => {
 
             <TouchableOpacity
               style={styles.actionCard}
-              onPress={() => router.push('./statistics')}
+              onPress={() => router.push('/(tabs)/statistics')}
               activeOpacity={0.85}
             >
               <LinearGradient
@@ -299,7 +306,7 @@ const HomeScreen = () => {
 
             <TouchableOpacity
               style={styles.actionCard}
-              onPress={() => router.push('./search')}
+              onPress={() => router.push('/(tabs)/search')}
               activeOpacity={0.85}
             >
               <LinearGradient
@@ -329,14 +336,14 @@ const HomeScreen = () => {
         <View style={styles.statsSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Vue d&apos;ensemble</Text>
-            <TouchableOpacity onPress={() => router.push('./statistics')}>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/statistics')}>
               <Text style={styles.seeAllText}>Voir tout →</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.statsGrid}>
             <TouchableOpacity 
               style={[styles.statCard, { backgroundColor: 'white' }]}
-              onPress={() => router.push('./search')}
+              onPress={() => router.push('/(tabs)/search')}
               activeOpacity={0.7}
             >
               <View style={styles.statCardHeader}>
@@ -359,7 +366,7 @@ const HomeScreen = () => {
 
             <TouchableOpacity 
               style={[styles.statCard, { backgroundColor: 'white' }]}
-              onPress={() => router.push('./consultations')}
+              onPress={() => router.push('/(tabs)/consultations')}
               activeOpacity={0.7}
             >
               <View style={styles.statCardHeader}>
@@ -382,6 +389,7 @@ const HomeScreen = () => {
 
             <TouchableOpacity 
               style={[styles.statCard, { backgroundColor: 'white' }]}
+              onPress={() => router.push('/(tabs)/consultations')}
               activeOpacity={0.7}
             >
               <View style={styles.statCardHeader}>
@@ -404,6 +412,7 @@ const HomeScreen = () => {
 
             <TouchableOpacity 
               style={[styles.statCard, { backgroundColor: 'white' }]}
+              onPress={() => router.push('/(tabs)/search')}
               activeOpacity={0.7}
             >
               <View style={styles.statCardHeader}>
@@ -436,7 +445,7 @@ const HomeScreen = () => {
           </View>
           
           <View style={styles.activityCard}>
-            <TouchableOpacity style={styles.activityItem} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.activityItem} onPress={() => router.push('/(tabs)/search')} activeOpacity={0.7}>
               <View style={[styles.activityIcon, { backgroundColor: '#FEF2F2' }]}>
                 <UserPlus size={22} color="#E84855" strokeWidth={2.5} />
               </View>
@@ -449,7 +458,7 @@ const HomeScreen = () => {
 
             <View style={styles.activityDivider} />
 
-            <TouchableOpacity style={styles.activityItem} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.activityItem} onPress={() => router.push('/(tabs)/consultations')} activeOpacity={0.7}>
               <View style={[styles.activityIcon, { backgroundColor: '#EFF6FF' }]}>
                 <FileText size={22} color="#3B82F6" strokeWidth={2.5} />
               </View>
@@ -462,7 +471,7 @@ const HomeScreen = () => {
 
             <View style={styles.activityDivider} />
 
-            <TouchableOpacity style={styles.activityItem} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.activityItem} onPress={() => router.push('/(tabs)/consultations')} activeOpacity={0.7}>
               <View style={[styles.activityIcon, { backgroundColor: '#FFFBEB' }]}>
                 <Ionicons name="alert-circle" size={22} color="#F59E0B" />
               </View>
@@ -539,6 +548,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     zIndex: 1,
+    paddingTop: 40,
   },
   headerTextContainer: {
     flex: 1,
@@ -575,6 +585,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 5,
+    paddingTop: Platform.OS === 'ios' ? 2 : 0,
   },
   contentContainer: {
     marginTop: -20,
