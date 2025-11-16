@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { register } from '@/api/users';
-import { useRouter } from 'expo-router';
-import { User, Mail, Lock, Building, Briefcase, Eye, EyeOff } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
+import { useRouter } from 'expo-router';
+import { Briefcase, Building, Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 const Register = () => {
@@ -21,7 +21,9 @@ const Register = () => {
 
   const handleSubmit = async () => {
     setLoading(true);
+    console.log('handleSubmit called'); // Added log
     try {
+      console.log('Attempting registration'); // Added log
       await register({
         username,
         email,
@@ -31,6 +33,7 @@ const Register = () => {
         role,
         facility,
       });
+      console.log('Registration successful'); // Added log
       router.replace('/(auth)/login');
       Toast.show({
         type: 'success',
@@ -38,15 +41,17 @@ const Register = () => {
         text2: 'You can now log in with your new account!',
       });
     } catch (err) {
+      console.error('Registration failed:', err); // Modified log
       setError('Registration failed. Please try again.');
       Toast.show({
         type: 'error',
         text1: 'Registration Failed',
-        text2: err.message || 'Please try again.',
+        text2: (err as any).message || 'Please try again.',
       });
       console.error(err);
     } finally {
       setLoading(false);
+      console.log('handleSubmit completed'); // Added log
     }
   };
 
@@ -159,7 +164,10 @@ const Register = () => {
         )}
       </TouchableOpacity>
       
-      <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+      <TouchableOpacity onPress={() => {
+        console.log('Login link pressed'); // Added log
+        router.push('/(auth)/login');
+      }}>
         <Text style={styles.link}>Already have an account? Login</Text>
       </TouchableOpacity>
     </ScrollView>

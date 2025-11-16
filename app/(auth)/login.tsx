@@ -34,7 +34,7 @@ const Login = () => {
       Toast.show({
         type: 'error',
         text1: 'Login Failed',
-        text2: err.message || 'Please check your credentials.',
+        text2: (err as any).message || 'Please check your credentials.',
       });
       console.error(err);
     } finally {

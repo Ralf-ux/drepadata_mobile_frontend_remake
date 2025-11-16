@@ -11,10 +11,12 @@ import {
   TouchableOpacity,
   View,
   Animated,
+  Platform,
 } from 'react-native';
 import { logout } from '@/utils/authUtils';
 import Toast from 'react-native-toast-message';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Activity, FileText, Users, UserPlus } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -31,15 +33,25 @@ const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [greeting, setGreeting] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [scaleAnim] = useState(new Animated.Value(0.95));
 
   useEffect(() => {
     loadStats();
     setGreetingMessage();
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
+    
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, []);
 
   const setGreetingMessage = () => {
@@ -92,15 +104,15 @@ const HomeScreen = () => {
       router.replace('/(auth)/login');
       Toast.show({
         type: 'success',
-        text1: 'Logged Out',
-        text2: 'You have been successfully logged out.',
+        text1: 'Déconnecté',
+        text2: 'Vous avez été déconnecté avec succès.',
       });
     } catch (error) {
       console.error('Logout failed:', error);
       Toast.show({
         type: 'error',
-        text1: 'Logout Failed',
-        text2: 'An error occurred during logout.',
+        text1: 'Échec de la déconnexion',
+        text2: 'Une erreur s\'est produite lors de la déconnexion.',
       });
     }
   };
@@ -120,7 +132,7 @@ const HomeScreen = () => {
     >
       {/* Enhanced Header with Gradient */}
       <LinearGradient
-        colors={['#E84855', '#C73543']}
+        colors={['#E84855', '#D03744', '#C73543']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
@@ -132,47 +144,59 @@ const HomeScreen = () => {
             <Text style={styles.headerSubtitle}>Gestion des patients drépanocytaires</Text>
           </View>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={20} color="#E84855" />
+            <Ionicons name="log-out-outline" size={22} color="#E84855" />
           </TouchableOpacity>
         </View>
+
+        {/* Decorative circles */}
+        <View style={styles.decorativeCircle1} />
+        <View style={styles.decorativeCircle2} />
       </LinearGradient>
 
-      <Animated.View style={[styles.contentContainer, { opacity: fadeAnim }]}>
+      <Animated.View 
+        style={[
+          styles.contentContainer, 
+          { 
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }]
+          }
+        ]}
+      >
         {/* Quick Stats Banner */}
         <View style={styles.quickStatsBanner}>
-          <View style={styles.quickStatItem}>
-            <View style={styles.quickStatIconContainer}>
-              <Ionicons name="calendar-outline" size={20} color="#E84855" />
+          <TouchableOpacity style={styles.quickStatItem} activeOpacity={0.7}>
+            <View style={[styles.quickStatIconContainer, { backgroundColor: '#FEF2F2' }]}>
+              <Ionicons name="calendar-outline" size={22} color="#E84855" />
             </View>
-            <View>
+            <View style={styles.quickStatTextContainer}>
               <Text style={styles.quickStatNumber}>{stats.todayConsultations}</Text>
               <Text style={styles.quickStatLabel}>Aujourd'hui</Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.quickStatDivider} />
 
-          <View style={styles.quickStatItem}>
-            <View style={styles.quickStatIconContainer}>
-              <Ionicons name="alert-circle-outline" size={20} color="#F59E0B" />
+          <TouchableOpacity style={styles.quickStatItem} activeOpacity={0.7}>
+            <View style={[styles.quickStatIconContainer, { backgroundColor: '#FFFBEB' }]}>
+              <Ionicons name="alert-circle-outline" size={22} color="#F59E0B" />
             </View>
-            <View>
+            <View style={styles.quickStatTextContainer}>
               <Text style={styles.quickStatNumber}>{stats.urgentFollowUps}</Text>
               <Text style={styles.quickStatLabel}>Urgents</Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.quickStatDivider} />
 
-          <View style={styles.quickStatItem}>
-            <View style={styles.quickStatIconContainer}>
-              <Ionicons name="people-outline" size={20} color="#10B981" />
+          <TouchableOpacity style={styles.quickStatItem} activeOpacity={0.7}>
+            <View style={[styles.quickStatIconContainer, { backgroundColor: '#F0FDF4' }]}>
+              <Ionicons name="people-outline" size={22} color="#10B981" />
             </View>
-            <View>
+            <View style={styles.quickStatTextContainer}>
               <Text style={styles.quickStatNumber}>{stats.recentPatients}</Text>
               <Text style={styles.quickStatLabel}>Nouveaux</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Enhanced Search Bar */}
@@ -188,256 +212,291 @@ const HomeScreen = () => {
           <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
         </TouchableOpacity>
 
-      {/* Stats Cards - Now at the top */}
-      <View style={styles.statsSection}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Vue d&apos;ensemble</Text>
-          <TouchableOpacity onPress={() => router.push('./statistics')}>
-            <Text style={styles.seeAllText}>Voir tout →</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.statsGrid}>
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: '#FFF1F2' }]}
-            onPress={() => router.push('./search')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.statCardHeader}>
-              <View style={[styles.statIconContainer, { backgroundColor: '#E84855' }]}>
-                <Ionicons name="people" size={22} color="white" />
-              </View>
-              <Ionicons name="trending-up" size={16} color="#10B981" />
-            </View>
-            <Text style={styles.statNumber}>{stats.totalPatients}</Text>
-            <Text style={styles.statLabel}>Total Patients</Text>
-            <View style={styles.statFooter}>
-              <View style={styles.statBadge}>
-                <Text style={styles.statBadgeText}>Actif</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: '#EFF6FF' }]}
-            onPress={() => router.push('./consultations')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.statCardHeader}>
-              <View style={[styles.statIconContainer, { backgroundColor: '#3B82F6' }]}>
-                <Ionicons name="document-text" size={22} color="white" />
-              </View>
-              <Ionicons name="calendar" size={16} color="#64748B" />
-            </View>
-            <Text style={styles.statNumber}>{stats.totalConsultations}</Text>
-            <Text style={styles.statLabel}>Consultations</Text>
-            <View style={styles.statFooter}>
-              <View style={styles.statBadge}>
-                <Text style={styles.statBadgeText}>Total</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: '#F0FDF4' }]}
-            activeOpacity={0.7}
-          >
-            <View style={styles.statCardHeader}>
-              <View style={[styles.statIconContainer, { backgroundColor: '#10B981' }]}>
-                <Ionicons name="bar-chart" size={22} color="white" />
-              </View>
-              <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-            </View>
-            <Text style={styles.statNumber}>{stats.totalFollowUps}</Text>
-            <Text style={styles.statLabel}>Suivis</Text>
-            <View style={styles.statFooter}>
-              <View style={styles.statBadge}>
-                <Text style={styles.statBadgeText}>En cours</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: '#FFFBEB' }]}
-            activeOpacity={0.7}
-          >
-            <View style={styles.statCardHeader}>
-              <View style={[styles.statIconContainer, { backgroundColor: '#F59E0B' }]}>
-                <Ionicons name="person-add" size={22} color="white" />
-              </View>
-              <Ionicons name="time" size={16} color="#64748B" />
-            </View>
-            <Text style={styles.statNumber}>{stats.recentPatients}</Text>
-            <Text style={styles.statLabel}>Nouveaux</Text>
-            <View style={styles.statFooter}>
-              <View style={styles.statBadge}>
-                <Text style={styles.statBadgeText}>30 jours</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Enhanced Quick Actions */}
-      <View style={styles.quickActions}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Actions rapides</Text>
-          <Text style={styles.sectionSubtitle}>Accès direct aux fonctionnalités</Text>
-        </View>
-        <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => router.push('../create-patient')}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['#E84855', '#C73543']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.actionGradient}
-            >
-              <View style={styles.actionIconLarge}>
-                <Ionicons name="person-add" size={28} color="white" />
-              </View>
-              <Text style={styles.actionTitle}>Nouveau Patient</Text>
-              <Text style={styles.actionSubtitle}>Ajouter un patient</Text>
-              <View style={styles.actionArrow}>
-                <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.8)" />
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => router.push('./consultations')}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['#3B82F6', '#2563EB']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.actionGradient}
-            >
-              <View style={styles.actionIconLarge}>
-                <Ionicons name="document-text" size={28} color="white" />
-              </View>
-              <Text style={styles.actionTitle}>Consultations</Text>
-              <Text style={styles.actionSubtitle}>Voir les consultations</Text>
-              <View style={styles.actionArrow}>
-                <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.8)" />
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => router.push('./statistics')}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['#10B981', '#059669']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.actionGradient}
-            >
-              <View style={styles.actionIconLarge}>
-                <Ionicons name="bar-chart" size={28} color="white" />
-              </View>
-              <Text style={styles.actionTitle}>Statistiques</Text>
-              <Text style={styles.actionSubtitle}>Analyser les données</Text>
-              <View style={styles.actionArrow}>
-                <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.8)" />
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => router.push('./search')}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['#F59E0B', '#D97706']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.actionGradient}
-            >
-              <View style={styles.actionIconLarge}>
-                <Ionicons name="people" size={28} color="white" />
-              </View>
-              <Text style={styles.actionTitle}>Tous les patients</Text>
-              <Text style={styles.actionSubtitle}>Liste complète</Text>
-              <View style={styles.actionArrow}>
-                <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.8)" />
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Recent Activity Section */}
-      <View style={styles.recentActivity}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Activité récente</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAllText}>Voir tout →</Text>
-          </TouchableOpacity>
-        </View>
-        
-        <View style={styles.activityCard}>
-          <View style={styles.activityItem}>
-            <View style={[styles.activityIcon, { backgroundColor: '#FEF2F2' }]}>
-              <Ionicons name="person-add" size={20} color="#E84855" />
-            </View>
-            <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>Nouveaux patients</Text>
-              <Text style={styles.activityDescription}>{stats.recentPatients} patient(s) ajouté(s) ce mois</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
+        {/* Enhanced Quick Actions */}
+        <View style={styles.quickActions}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Actions rapides</Text>
+            <Text style={styles.sectionSubtitle}>Accès direct aux fonctionnalités</Text>
           </View>
+          <View style={styles.actionsRow}>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push('../create-patient')}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={['#E84855', '#D03744']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <View style={styles.actionContent}>
+                  <View style={styles.actionIconLarge}>
+                    <UserPlus size={30} color="white" strokeWidth={2.5} />
+                  </View>
+                  <View style={styles.actionTextContainer}>
+                    <Text style={styles.actionTitle}>Nouveau{'\n'}Patient</Text>
+                    <Text style={styles.actionSubtitle}>Ajouter un patient</Text>
+                  </View>
+                </View>
+                <View style={styles.actionArrow}>
+                  <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.9)" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
 
-          <View style={styles.activityDivider} />
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push('./consultations')}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={['#3B82F6', '#2563EB']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <View style={styles.actionContent}>
+                  <View style={styles.actionIconLarge}>
+                    <FileText size={30} color="white" strokeWidth={2.5} />
+                  </View>
+                  <View style={styles.actionTextContainer}>
+                    <Text style={styles.actionTitle}>Consultations</Text>
+                    <Text style={styles.actionSubtitle}>Voir les consultations</Text>
+                  </View>
+                </View>
+                <View style={styles.actionArrow}>
+                  <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.9)" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
 
-          <View style={styles.activityItem}>
-            <View style={[styles.activityIcon, { backgroundColor: '#EFF6FF' }]}>
-              <Ionicons name="document-text" size={20} color="#3B82F6" />
-            </View>
-            <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>Consultations du jour</Text>
-              <Text style={styles.activityDescription}>{stats.todayConsultations} consultation(s) aujourd'hui</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
-          </View>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push('./statistics')}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={['#10B981', '#059669']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <View style={styles.actionContent}>
+                  <View style={styles.actionIconLarge}>
+                    <Activity size={30} color="white" strokeWidth={2.5} />
+                  </View>
+                  <View style={styles.actionTextContainer}>
+                    <Text style={styles.actionTitle}>Statistiques</Text>
+                    <Text style={styles.actionSubtitle}>Analyser les données</Text>
+                  </View>
+                </View>
+                <View style={styles.actionArrow}>
+                  <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.9)" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
 
-          <View style={styles.activityDivider} />
-
-          <View style={styles.activityItem}>
-            <View style={[styles.activityIcon, { backgroundColor: '#FFFBEB' }]}>
-              <Ionicons name="alert-circle" size={20} color="#F59E0B" />
-            </View>
-            <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>Suivis urgents</Text>
-              <Text style={styles.activityDescription}>{stats.urgentFollowUps} suivi(s) nécessite(nt) attention</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push('./search')}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={['#F59E0B', '#D97706']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <View style={styles.actionContent}>
+                  <View style={styles.actionIconLarge}>
+                    <Users size={30} color="white" strokeWidth={2.5} />
+                  </View>
+                  <View style={styles.actionTextContainer}>
+                    <Text style={styles.actionTitle}>Tous les{'\n'}patients</Text>
+                    <Text style={styles.actionSubtitle}>Liste complète</Text>
+                  </View>
+                </View>
+                <View style={styles.actionArrow}>
+                  <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.9)" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
         </View>
-      </View>
 
-      {/* Quick Tips Card */}
-      <View style={styles.tipsSection}>
-        <View style={styles.tipsCard}>
-          <View style={styles.tipsHeader}>
-            <Ionicons name="bulb" size={24} color="#F59E0B" />
-            <Text style={styles.tipsTitle}>Conseil du jour</Text>
+        {/* Stats Cards */}
+        <View style={styles.statsSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Vue d&apos;ensemble</Text>
+            <TouchableOpacity onPress={() => router.push('./statistics')}>
+              <Text style={styles.seeAllText}>Voir tout →</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.tipsContent}>
-            N'oubliez pas de mettre à jour régulièrement les informations de vos patients et de planifier les suivis nécessaires.
-          </Text>
-        </View>
-      </View>
+          <View style={styles.statsGrid}>
+            <TouchableOpacity 
+              style={[styles.statCard, { backgroundColor: 'white' }]}
+              onPress={() => router.push('./search')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.statCardHeader}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#FEF2F2' }]}>
+                  <Users size={24} color="#E84855" strokeWidth={2.5} />
+                </View>
+                <View style={styles.statTrendBadge}>
+                  <Ionicons name="trending-up" size={14} color="#10B981" />
+                </View>
+              </View>
+              <Text style={styles.statNumber}>{stats.totalPatients}</Text>
+              <Text style={styles.statLabel}>Total Patients</Text>
+              <View style={styles.statFooter}>
+                <View style={[styles.statBadge, { backgroundColor: '#FEF2F2' }]}>
+                  <View style={styles.statBadgeDot} />
+                  <Text style={[styles.statBadgeText, { color: '#E84855' }]}>Actif</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
 
-      {/* Bottom Padding */}
-      <View style={styles.bottomPadding} />
+            <TouchableOpacity 
+              style={[styles.statCard, { backgroundColor: 'white' }]}
+              onPress={() => router.push('./consultations')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.statCardHeader}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#EFF6FF' }]}>
+                  <FileText size={24} color="#3B82F6" strokeWidth={2.5} />
+                </View>
+                <View style={styles.statTrendBadge}>
+                  <Ionicons name="calendar" size={14} color="#64748B" />
+                </View>
+              </View>
+              <Text style={styles.statNumber}>{stats.totalConsultations}</Text>
+              <Text style={styles.statLabel}>Consultations</Text>
+              <View style={styles.statFooter}>
+                <View style={[styles.statBadge, { backgroundColor: '#EFF6FF' }]}>
+                  <View style={[styles.statBadgeDot, { backgroundColor: '#3B82F6' }]} />
+                  <Text style={[styles.statBadgeText, { color: '#3B82F6' }]}>Total</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.statCard, { backgroundColor: 'white' }]}
+              activeOpacity={0.7}
+            >
+              <View style={styles.statCardHeader}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#F0FDF4' }]}>
+                  <Activity size={24} color="#10B981" strokeWidth={2.5} />
+                </View>
+                <View style={styles.statTrendBadge}>
+                  <Ionicons name="checkmark-circle" size={14} color="#10B981" />
+                </View>
+              </View>
+              <Text style={styles.statNumber}>{stats.totalFollowUps}</Text>
+              <Text style={styles.statLabel}>Suivis</Text>
+              <View style={styles.statFooter}>
+                <View style={[styles.statBadge, { backgroundColor: '#F0FDF4' }]}>
+                  <View style={[styles.statBadgeDot, { backgroundColor: '#10B981' }]} />
+                  <Text style={[styles.statBadgeText, { color: '#10B981' }]}>En cours</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.statCard, { backgroundColor: 'white' }]}
+              activeOpacity={0.7}
+            >
+              <View style={styles.statCardHeader}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#FFFBEB' }]}>
+                  <UserPlus size={24} color="#F59E0B" strokeWidth={2.5} />
+                </View>
+                <View style={styles.statTrendBadge}>
+                  <Ionicons name="time" size={14} color="#64748B" />
+                </View>
+              </View>
+              <Text style={styles.statNumber}>{stats.recentPatients}</Text>
+              <Text style={styles.statLabel}>Nouveaux</Text>
+              <View style={styles.statFooter}>
+                <View style={[styles.statBadge, { backgroundColor: '#FFFBEB' }]}>
+                  <View style={[styles.statBadgeDot, { backgroundColor: '#F59E0B' }]} />
+                  <Text style={[styles.statBadgeText, { color: '#F59E0B' }]}>30 jours</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Recent Activity Section */}
+        <View style={styles.recentActivity}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Activité récente</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllText}>Voir tout →</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.activityCard}>
+            <TouchableOpacity style={styles.activityItem} activeOpacity={0.7}>
+              <View style={[styles.activityIcon, { backgroundColor: '#FEF2F2' }]}>
+                <UserPlus size={22} color="#E84855" strokeWidth={2.5} />
+              </View>
+              <View style={styles.activityContent}>
+                <Text style={styles.activityTitle}>Nouveaux patients</Text>
+                <Text style={styles.activityDescription}>{stats.recentPatients} patient(s) ajouté(s) ce mois</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
+            </TouchableOpacity>
+
+            <View style={styles.activityDivider} />
+
+            <TouchableOpacity style={styles.activityItem} activeOpacity={0.7}>
+              <View style={[styles.activityIcon, { backgroundColor: '#EFF6FF' }]}>
+                <FileText size={22} color="#3B82F6" strokeWidth={2.5} />
+              </View>
+              <View style={styles.activityContent}>
+                <Text style={styles.activityTitle}>Consultations du jour</Text>
+                <Text style={styles.activityDescription}>{stats.todayConsultations} consultation(s) aujourd'hui</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
+            </TouchableOpacity>
+
+            <View style={styles.activityDivider} />
+
+            <TouchableOpacity style={styles.activityItem} activeOpacity={0.7}>
+              <View style={[styles.activityIcon, { backgroundColor: '#FFFBEB' }]}>
+                <Ionicons name="alert-circle" size={22} color="#F59E0B" />
+              </View>
+              <View style={styles.activityContent}>
+                <Text style={styles.activityTitle}>Suivis urgents</Text>
+                <Text style={styles.activityDescription}>{stats.urgentFollowUps} suivi(s) nécessite(nt) attention</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Tips Card */}
+        <View style={styles.tipsSection}>
+          <LinearGradient
+            colors={['#FFFBEB', '#FEF3C7']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.tipsCard}
+          >
+            <View style={styles.tipsHeader}>
+              <View style={styles.tipsIconContainer}>
+                <Ionicons name="bulb" size={24} color="#F59E0B" />
+              </View>
+              <Text style={styles.tipsTitle}>Conseil du jour</Text>
+            </View>
+            <Text style={styles.tipsContent}>
+              N'oubliez pas de mettre à jour régulièrement les informations de vos patients et de planifier les suivis nécessaires pour assurer un suivi optimal.
+            </Text>
+          </LinearGradient>
+        </View>
+
+        {/* Bottom Padding */}
+        <View style={styles.bottomPadding} />
       </Animated.View>
     </ScrollView>
   );
@@ -450,15 +509,36 @@ const styles = StyleSheet.create({
   },
   headerGradient: {
     paddingTop: 20,
-    paddingBottom: 32,
+    paddingBottom: 40,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  decorativeCircle1: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    top: -50,
+    right: -50,
+  },
+  decorativeCircle2: {
+    position: 'absolute',
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    bottom: -30,
+    left: -30,
   },
   headerContent: {
     paddingHorizontal: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    zIndex: 1,
   },
   headerTextContainer: {
     flex: 1,
@@ -466,102 +546,108 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontWeight: '500',
-    marginBottom: 4,
+    color: 'rgba(255, 255, 255, 0.95)',
+    fontWeight: '600',
+    marginBottom: 6,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '800',
     color: '#FFFFFF',
-    marginBottom: 4,
+    marginBottom: 6,
     letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: 'rgba(255, 255, 255, 0.9)',
     fontWeight: '500',
+    lineHeight: 20,
   },
   logoutButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   contentContainer: {
-    marginTop: -16,
+    marginTop: -20,
   },
   quickStatsBanner: {
     backgroundColor: 'white',
     marginHorizontal: 20,
     borderRadius: 20,
-    padding: 20,
+    padding: 18,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 6,
     marginBottom: 20,
   },
   quickStatItem: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   quickStatIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#F8FAFC',
+    width: 44,
+    height: 44,
+    borderRadius: 13,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  quickStatTextContainer: {
+    flex: 1,
+  },
   quickStatNumber: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
     color: '#0F172A',
     letterSpacing: -0.5,
+    lineHeight: 26,
   },
   quickStatLabel: {
     fontSize: 11,
     color: '#64748B',
     fontWeight: '600',
+    marginTop: 2,
   },
   quickStatDivider: {
     width: 1,
-    height: 40,
+    height: 44,
     backgroundColor: '#E2E8F0',
-    marginHorizontal: 4,
+    marginHorizontal: 6,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
     marginHorizontal: 20,
-    marginBottom: 24,
+    marginBottom: 28,
     paddingVertical: 16,
     paddingHorizontal: 18,
-    borderRadius: 16,
+    borderRadius: 18,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   searchIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     backgroundColor: '#FEF2F2',
     justifyContent: 'center',
     alignItems: 'center',
@@ -573,74 +659,141 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontWeight: '500',
   },
-  statsSection: {
+  quickActions: {
     paddingHorizontal: 20,
     marginBottom: 32,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     color: '#0F172A',
-    letterSpacing: -0.3,
+    letterSpacing: -0.5,
+    marginBottom: 4,
   },
   sectionSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#64748B',
     fontWeight: '500',
-    marginTop: 2,
   },
   seeAllText: {
     fontSize: 14,
     color: '#E84855',
+    fontWeight: '700',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 14,
+  },
+  actionCard: {
+    width: (width - 54) / 2,
+    borderRadius: 22,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  actionGradient: {
+    padding: 20,
+    minHeight: 180,
+    justifyContent: 'space-between',
+  },
+  actionContent: {
+    flex: 1,
+  },
+  actionIconLarge: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  actionTextContainer: {
+    marginBottom: 8,
+  },
+  actionTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 6,
+    letterSpacing: -0.3,
+    lineHeight: 22,
+  },
+  actionSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.9)',
     fontWeight: '600',
+    lineHeight: 18,
+  },
+  actionArrow: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+  },
+  statsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 32,
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 14,
   },
   statCard: {
     flex: 1,
-    minWidth: (width - 52) / 2,
-    borderRadius: 20,
+    minWidth: (width - 54) / 2,
+    borderRadius: 22,
     padding: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
   statCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   statIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 50,
+    height: 50,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statTrendBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 32,
-    fontWeight: '800',
+    fontSize: 36,
+    fontWeight: '900',
     color: '#0F172A',
-    marginBottom: 4,
-    letterSpacing: -1,
+    marginBottom: 6,
+    letterSpacing: -1.5,
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#64748B',
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   statFooter: {
     flexDirection: 'row',
@@ -648,148 +801,65 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    gap: 6,
+  },
+  statBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#E84855',
   },
   statBadgeText: {
-    fontSize: 11,
-    color: '#475569',
-    fontWeight: '600',
-  },
-  quickActions: {
-    paddingHorizontal: 20,
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#0F172A',
-    letterSpacing: -0.3,
-    marginBottom: 16,
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  actionCard: {
-    flex: 1,
-    aspectRatio: 1,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  
-  
-  statsSection: {
-    paddingHorizontal: 20,
-    marginBottom: 32,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  statItem: {
-    flex: 1,
-    minWidth: (width - 52) / 2,
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  statHeader: {
-    flexDirection: 'row',
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  actionGradient: {
-    padding: 20,
-    minHeight: 170,
-    justifyContent: 'space-between',
-  },
-  actionIconLarge: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  actionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 4,
-    letterSpacing: -0.2,
-  },
-  actionSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.85)',
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  actionArrow: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'flex-end',
   },
   recentActivity: {
     paddingHorizontal: 20,
-    marginBottom: 24,
+    marginBottom: 28,
   },
   activityCard: {
     backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: 22,
+    padding: 18,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
   activityItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   activityIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 14,
   },
   activityContent: {
     flex: 1,
   },
   activityTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#0F172A',
-    marginBottom: 2,
+    marginBottom: 4,
+    letterSpacing: -0.2,
   },
   activityDescription: {
     fontSize: 13,
     color: '#64748B',
     fontWeight: '500',
+    lineHeight: 18,
   },
   activityDivider: {
     height: 1,
@@ -798,34 +868,47 @@ const styles = StyleSheet.create({
   },
   tipsSection: {
     paddingHorizontal: 20,
-    marginBottom: 24,
+    marginBottom: 28,
   },
   tipsCard: {
-    backgroundColor: '#FFFBEB',
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
+    borderRadius: 22,
+    padding: 22,
+    borderWidth: 1.5,
     borderColor: '#FEF3C7',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 3,
   },
   tipsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 12,
+    marginBottom: 14,
+  },
+  tipsIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   tipsTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
     color: '#92400E',
+    letterSpacing: -0.3,
   },
   tipsContent: {
     fontSize: 14,
     color: '#78350F',
-    lineHeight: 20,
+    lineHeight: 22,
     fontWeight: '500',
   },
   bottomPadding: {
-    height: 24,
+    height: 32,
   },
 });
 

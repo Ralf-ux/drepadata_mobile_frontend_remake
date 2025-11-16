@@ -8,21 +8,6 @@ const syncToBackend = async (endpoint: string, data: any, method: 'POST' | 'PUT'
   try {
     // For now, just log the sync attempt and return true to avoid errors
     console.log(`Syncing to backend: ${method} ${API_BASE_URL}${endpoint}`, data);
-=======
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      console.error(`Failed to sync to backend: ${response.statusText}`);
-      return false;
-    }
-
->>>>>>> cd25b5d588c37a9ae4351709534b0f2b97b35579
     return true;
   } catch (error) {
     console.error('Error syncing to backend:', error);
@@ -31,86 +16,6 @@ const syncToBackend = async (endpoint: string, data: any, method: 'POST' | 'PUT'
 };
 
 export interface PatientProfile {
-<<<<<<< HEAD
-  id: string;
-  numero_identification_unique: string;
-  nom: string;
-  prenom: string;
-  date_naissance: string;
-  age: string;
-  sexe: string;
-  quartier: string;
-  lieu_dit: string;
-  contact_urgence_nom: string;
-  contact_urgence_telephone: string;
-  contact_urgence_relation: string;
-  telephone_patient: string;
-  vit_avec_le_patient: boolean;
-  lien_avec_patient: string;
-  patient_refere: boolean;
-  patient_refere_de: string;
-  patient_refere_pour: string;
-  appartient_a_groupe: boolean;
-  nom_du_groupe: string;
-  rang_dans_fratrie: string;
-  nombre_de_drepanocytaires_dans_fratrie: string;
-  assurance: string;
-  type_de_drepanocytose: string;
-  age_diagnostic: string;
-  circonstances_du_diagnostic: string;
-  region: string;
-  antecedent_familiaux: string;
-  autres_antecedents_medicaux: string;
-  allergies_connues: boolean;
-  details_allergies: string;
-  groupe_sanguin_rhesus: string;
-
-  // New profile keys
-  date_diagnostic?: string;
-  age_au_diagnostic?: string;
-  vaccins_naissance?: Record<string, boolean>;
-
-=======
->>>>>>> cd25b5d588c37a9ae4351709534b0f2b97b35579
-  // Static consultation fields moved from ConsultationData
-  fosa: string;
-  fosa_other: string;
-  district: string;
-  diagnostic_date: string;
-  ipp: string;
-  personnel: string;
-  personnel_remplissant: string;
-  poids: string;
-  taille: string;
-  referred: string;
-  referred_from: string;
-  referred_from_other: string;
-  referred_for: string;
-  address: string;
-  patient_phone_number: string;
-  lives_with: string;
-  insurance_other: string;
-  support_group: string;
-  group_name: string;
-  appartient_groupe: string;
-  nom_groupe_association: string;
-  parents: string;
-  sibling_rank: string;
-  sickle_type: string;
-  diagnosis_age: string;
-  diagnosis_circumstance: string;
-  family_history: string;
-  other_medical_history: string;
-  other_medical_history_details: string;
-  previous_surgeries: string;
-  interventions_chirurgicales_anterieures: string;
-  date_derniere_intervention: string;
-  cause_derniere_intervention: string;
-  acide_folique_step3: string;
-  nombre_crises_vaso: string;
-  allergies: string;
-  allergies_details: string;
-=======
   id: string; // Frontend generated ID
   lastName: string;
   firstName: string;
@@ -158,7 +63,6 @@ export interface PatientProfile {
   };
   isActive?: boolean; // Defaulted in backend
   createdBy?: string; // ObjectId string, handled by backend
->>>>>>> 1d9fcb0 (Feat: Update PatientProfile interface in storage.ts to match backend schema)
 
   created_at: string;
   updated_at: string;
@@ -322,10 +226,7 @@ const STORAGE_KEYS = {
   CONSULTATIONS: '@consultations',
   FOLLOW_UPS: '@follow_ups',
   VACCINATIONS: '@vaccinations',
-<<<<<<< HEAD
-=======
   ONBOARDING_COMPLETE: '@onboarding_complete',
->>>>>>> cd25b5d588c37a9ae4351709534b0f2b97b35579
 } as const;
 
 export const savePatient = async (patient: PatientProfile): Promise<void> => {
@@ -546,8 +447,6 @@ export const deleteVaccinationRecord = async (patientId: string): Promise<void> 
   }
 };
 
-<<<<<<< HEAD
-=======
 export const setOnboardingComplete = async (): Promise<void> => {
   try {
     await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, 'true');
@@ -566,17 +465,16 @@ export const isOnboardingComplete = async (): Promise<boolean> => {
     return false;
   }
 };
->>>>>>> cd25b5d588c37a9ae4351709534b0f2b97b35579
 
 export const searchPatients = async (query: string): Promise<PatientProfile[]> => {
   try {
     const patients = await getPatients();
     const lowerQuery = query.toLowerCase();
     
-    return patients.filter(p => 
-      p.nom.toLowerCase().includes(lowerQuery) ||
-      p.prenom.toLowerCase().includes(lowerQuery) ||
-      p.numero_identification_unique.toLowerCase().includes(lowerQuery)
+    return patients.filter(p =>
+      p.lastName.toLowerCase().includes(lowerQuery) ||
+      p.firstName.toLowerCase().includes(lowerQuery) ||
+      p.uniqueId.toLowerCase().includes(lowerQuery)
     );
   } catch (error) {
     console.error('Error searching patients:', error);
