@@ -289,15 +289,6 @@ const HomeScreen = () => {
             onPress={() => router.push('../create-patient')}
             activeOpacity={0.8}
           >
-<<<<<<< HEAD
-            <View style={[styles.actionIcon, { backgroundColor: '#E84855' }]}>
-              <UserPlus name="person-add" size={24} color="white" />
-            </View>
-            <Text style={styles.actionLabel}>Nouveau Patient</Text>
-=======
-            <Text style={styles.actionLabel}>Nouveau{`\n`}Patient</Text>
->>>>>>> cd25b5d (not yet done)
-=======
             <LinearGradient
               colors={['#E84855', '#C73543']}
               start={{ x: 0, y: 0 }}
@@ -313,7 +304,6 @@ const HomeScreen = () => {
                 <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.8)" />
               </View>
             </LinearGradient>
->>>>>>> 1d9fcb0 (Feat: Update PatientProfile interface in storage.ts to match backend schema)
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -321,15 +311,6 @@ const HomeScreen = () => {
             onPress={() => router.push('./consultations')}
             activeOpacity={0.8}
           >
-<<<<<<< HEAD
-            <View style={[styles.actionIcon, { backgroundColor: '#3B82F6' }]}>
-              <FileText name="document-text" size={24} color="white" />
-            </View>
-            <Text style={styles.actionLabel}>Consultations</Text>
-=======
-            <Text style={styles.actionLabel}>Consulta-{`\n`}tions</Text>
->>>>>>> cd25b5d (not yet done)
-=======
             <LinearGradient
               colors={['#3B82F6', '#2563EB']}
               start={{ x: 0, y: 0 }}
@@ -345,7 +326,6 @@ const HomeScreen = () => {
                 <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.8)" />
               </View>
             </LinearGradient>
->>>>>>> 1d9fcb0 (Feat: Update PatientProfile interface in storage.ts to match backend schema)
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -353,15 +333,6 @@ const HomeScreen = () => {
             onPress={() => router.push('./statistics')}
             activeOpacity={0.8}
           >
-<<<<<<< HEAD
-            <View style={[styles.actionIcon, { backgroundColor: '#10B981' }]}>
-              <Activity name="bar-chart" size={24} color="white" />
-            </View>
-            <Text style={styles.actionLabel}>Statistiques</Text>
-=======
-            <Text style={styles.actionLabel}>Statis-{`\n`}tiques</Text>
->>>>>>> cd25b5d (not yet done)
-=======
             <LinearGradient
               colors={['#10B981', '#059669']}
               start={{ x: 0, y: 0 }}
@@ -377,7 +348,6 @@ const HomeScreen = () => {
                 <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.8)" />
               </View>
             </LinearGradient>
->>>>>>> 1d9fcb0 (Feat: Update PatientProfile interface in storage.ts to match backend schema)
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -385,15 +355,6 @@ const HomeScreen = () => {
             onPress={() => router.push('./search')}
             activeOpacity={0.8}
           >
-<<<<<<< HEAD
-            <View style={[styles.actionIcon, { backgroundColor: '#F59E0B' }]}>
-              <Users name="people" size={24} color="white" />
-            </View>
-            <Text style={styles.actionLabel}>Tous les patients</Text>
-=======
-            <Text style={styles.actionLabel}>Tous les{`\n`}patients</Text>
->>>>>>> cd25b5d (not yet done)
-=======
             <LinearGradient
               colors={['#F59E0B', '#D97706']}
               start={{ x: 0, y: 0 }}
@@ -409,7 +370,6 @@ const HomeScreen = () => {
                 <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.8)" />
               </View>
             </LinearGradient>
->>>>>>> 1d9fcb0 (Feat: Update PatientProfile interface in storage.ts to match backend schema)
           </TouchableOpacity>
         </View>
       </View>
@@ -700,20 +660,14 @@ const styles = StyleSheet.create({
   },
   quickActions: {
     paddingHorizontal: 20,
-<<<<<<< HEAD
-    marginBottom: -48,
-=======
-    marginBottom: 24,
->>>>>>> cd25b5d (not yet done)
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: '#0F172A',
+    letterSpacing: -0.3,
     marginBottom: 16,
-=======
-    marginBottom: 32,
->>>>>>> 1d9fcb0 (Feat: Update PatientProfile interface in storage.ts to match backend schema)
   },
   actionsRow: {
     flexDirection: 'row',
@@ -721,51 +675,21 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   actionCard: {
-    width: (width - 52) / 2,
-    borderRadius: 20,
-<<<<<<< HEAD
-    padding: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-=======
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  actionCard: {
     flex: 1,
     aspectRatio: 1,
     borderRadius: 20,
-    padding: 16,
-    justifyContent: 'space-between',
->>>>>>> cd25b5d (not yet done)
-    minHeight: 120,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
   },
-  actionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#374151',
-    lineHeight: 16,
-    textAlign: 'center',
-=======
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#374151',
-    lineHeight: 18,
->>>>>>> cd25b5d (not yet done)
-  },
+  
+  
   statsSection: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
-    marginTop: -48,
-=======
->>>>>>> cd25b5d (not yet done)
+    marginBottom: 32,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -783,7 +707,6 @@ const styles = StyleSheet.create({
   },
   statHeader: {
     flexDirection: 'row',
-=======
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -794,7 +717,6 @@ const styles = StyleSheet.create({
   actionGradient: {
     padding: 20,
     minHeight: 170,
->>>>>>> 1d9fcb0 (Feat: Update PatientProfile interface in storage.ts to match backend schema)
     justifyContent: 'space-between',
   },
   actionIconLarge: {
