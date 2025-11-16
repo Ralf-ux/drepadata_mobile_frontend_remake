@@ -50,7 +50,7 @@ const ConsultationsScreen = () => {
           const patient = await getPatientById(consultation.patient_id);
           return {
             ...consultation,
-            patientName: patient ? `${patient.lastName} ${patient.firstName}` : 'Patient inconnu',
+            patientName: patient ? `${patient.nom} ${patient.prenom}` : 'Patient inconnu',
           };
         })
       );
@@ -62,7 +62,7 @@ const ConsultationsScreen = () => {
           const patient = await getPatientById(followUp.patient_id);
           return {
             ...followUp,
-            patientName: patient ? `${patient.lastName} ${patient.firstName}` : 'Patient inconnu',
+            patientName: patient ? `${patient.nom} ${patient.prenom}` : 'Patient inconnu',
           };
         })
       );

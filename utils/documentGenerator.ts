@@ -139,8 +139,8 @@ SECTION 6 : INFORMATIONS SOCIALES
 
 Patient référé          : ${patient.patient_refere ? 'Oui' : 'Non'}
 Appartient à un groupe  : ${patient.appartient_a_groupe ? 'Oui' : 'Non'}
-Rang dans la fratrie    : ${cleanText(patient.rang_dans_fratrie)}
-Drépanocytaires/fratrie : ${cleanText(patient.nombre_de_drepanocytaires_dans_fratrie)}
+Rang dans la fratrie    : ${cleanText(patient.rang_dans_fratrie?.toString())}
+Drépanocytaires/fratrie : ${cleanText(patient.nombre_de_drepanocytaires_dans_fratrie?.toString())}
 Assurance               : ${cleanText(patient.assurance)}
 
 
