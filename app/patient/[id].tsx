@@ -313,13 +313,13 @@ const PatientProfileScreen = () => {
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: '#dc3545' }]}
-          onPress={() => router.push(`/consultation/${id}` as any)}
-        >
-          <FileText size={20} color="white" />
-          <Text style={styles.actionButtonText}>Nouvelle consultation</Text>
-        </TouchableOpacity>
+         <TouchableOpacity
+           style={[styles.actionButton, { backgroundColor: '#ff0000c9' }]}
+           onPress={() => router.push(`/consultation/create-route?id=${id}` as any)}
+         >
+           <FileText size={20} color="white" />
+           <Text style={styles.actionButtonText}>Nouvelle consultation</Text>
+         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: '#28a745' }]}
@@ -337,6 +337,7 @@ const PatientProfileScreen = () => {
           <Text style={styles.actionButtonText}>Calendrier vaccinal</Text>
         </TouchableOpacity>
 
+       
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: '#17a2b8' }]}
           onPress={() => setShowUpdateModal(true)}

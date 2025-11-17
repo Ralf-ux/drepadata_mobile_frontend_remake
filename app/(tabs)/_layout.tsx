@@ -37,13 +37,15 @@ export default function TabLayout() {
       <Tabs.Screen
         name="consultations"
         options={{
+          headerShown: false,
           title: "Consultations",
           tabBarIcon: ({ color, size }) => <FileText size={size} color={color} />,
         }}
-      />
+        />
       <Tabs.Screen
         name="statistics"
         options={{
+          headerShown: false,
           title: "Statistiques",
           tabBarIcon: ({ color, size }) => <Activity size={size} color={color} />,
         }}

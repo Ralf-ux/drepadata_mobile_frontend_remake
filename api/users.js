@@ -12,8 +12,9 @@ export const deletePatient = (id) => del(`/patients/${id}`);
 export const getPatients = () => get('/patients');
 
 
-export const getUsers = () => get('/users');
-export const updateUser = (id, userData) => put(`/users/${id}`, userData);
-export const deleteUser = (id) => del(`/users/${id}`);
-export const updateUserPassword = (id, passwordData) => put(`/users/${id}/password`, passwordData);
-export const uploadProfileImage = (id, imageData) => put(`/users/${id}/profile-image`, imageData, { headers: { 'Content-Type': 'multipart/form-data' } });
+//for consultation 
+export const createConsultation = (consultationsData) => post('/consultations', consultationsData);
+export const updateConsultation = (id, consultationsData) => put(`/consultations/${id}`, consultationsData);
+export const completeConsultation = (id, consultationsData) => put(`/consultations/${id}/complete`, consultationsData);
+export const getConsultations = () => get('/consultations');
+
