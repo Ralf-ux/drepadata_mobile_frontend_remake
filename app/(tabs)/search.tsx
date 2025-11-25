@@ -1,3 +1,4 @@
+/* SearchScreen.tsx – Professional Medical Search */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -10,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search as SearchIcon, User, FileText, Activity } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import {
   getPatients,
   searchPatients,
@@ -18,6 +19,35 @@ import {
   getFollowUpsByPatientId,
   type PatientProfile,
 } from '@/utils/storage';
+
+const COLORS = {
+  bg: '#FFF1F2',
+  bgSecondary: '#FFF7ED',
+  white: '#FFFFFF',
+  textPrimary: '#1E293B',
+  textSecondary: '#64748B',
+  textTertiary: '#94A3B8',
+  red: '#DC2626',
+  redLight: '#FCA5A5',
+  redBg: '#FEE2E2',
+  rose: '#F43F5E',
+  roseLight: '#FDA4AF',
+  roseBg: '#FFE4E6',
+  amber: '#F59E0B',
+  amberBg: '#FEF3C7',
+  emerald: '#10B981',
+  emeraldBg: '#D1FAE5',
+  border: '#FFE4E6',
+  borderLight: '#FFF1F2',
+  shadow: 'rgba(220, 38, 38, 0.15)',
+};
+
+const SPACING = 8;
+const RADIUS = 12;
+
+const Icon = ({ name, size = 20, color = COLORS.textPrimary }: any) => (
+  <Ionicons name={name} size={size} color={color} />
+);
 
 const SearchScreen = () => {
   const router = useRouter();
@@ -41,7 +71,7 @@ const SearchScreen = () => {
       setLoading(true);
       const patients = await getPatients();
       setAllPatients(patients);
-      
+
       const stats: Record<string, { consultations: number; followUps: number }> = {};
       for (const patient of patients) {
         const consultations = await getConsultationsByPatientId(patient.id);
@@ -64,7 +94,7 @@ const SearchScreen = () => {
       setFilteredPatients(allPatients);
       return;
     }
-    
+
     try {
       const results = await searchPatients(searchQuery);
       setFilteredPatients(results);
@@ -82,50 +112,51 @@ const SearchScreen = () => {
 
   const renderPatientCard = (patient: PatientProfile) => {
     const stats = patientStats[patient.id] || { consultations: 0, followUps: 0 };
-    
+
     return (
       <TouchableOpacity
         key={patient.id}
         style={styles.patientCard}
         onPress={() => router.push(`/patient/${patient.id}` as any)}
+        activeOpacity={0.7}
       >
-        <View style={styles.patientCardHeader}>
-          <View style={styles.avatarContainer}>
-            <User size={32} color="#dc3545" />
+        <View style={styles.patientHeader}>
+          <View style={styles.avatar}>
+            <Icon name="person" size={28} color={COLORS.red} />
           </View>
           <View style={styles.patientInfo}>
             <Text style={styles.patientName}>
               {patient.nom} {patient.prenom}
             </Text>
-            <Text style={styles.patientDetail}>
+            <Text style={styles.patientId}>
               ID: {patient.numero_identification_unique}
             </Text>
-            <Text style={styles.patientDetail}>
-              {patient.age} ans • {patient.sexe} • {patient.type_de_drepanocytose}
+            <Text style={styles.patientMeta}>
+              {patient.age_diagnostic} ans • {patient.sexe} • {patient.type_de_drepanocytose}
             </Text>
           </View>
         </View>
 
-        <View style={styles.patientCardStats}>
+        <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <FileText size={16} color="#007bff" />
-            <Text style={styles.statText}>{stats.consultations} consultations</Text>
+            <Icon name="document-text" size={16} color={COLORS.rose} />
+            <Text style={styles.statText}>{stats.consultations} consultation{stats.consultations > 1 ? 's' : ''}</Text>
           </View>
           <View style={styles.statItem}>
-            <Activity size={16} color="#28a745" />
-            <Text style={styles.statText}>{stats.followUps} suivis</Text>
+            <Icon name="pulse" size={16} color={COLORS.emerald} />
+            <Text style={styles.statText}>{stats.followUps} suivi{stats.followUps > 1 ? 's' : ''}</Text>
           </View>
         </View>
 
-        <View style={styles.patientCardFooter}>
+        <View style={styles.cardFooter}>
           <Text style={styles.footerText}>
-            Créé le: {new Date(patient.created_at).toLocaleDateString('fr-FR')}
+            Créé le {new Date(patient.created_at).toLocaleDateString('fr-FR')}
           </Text>
           <TouchableOpacity
-            style={styles.viewButton}
+            style={styles.viewBtn}
             onPress={() => router.push(`/patient/${patient.id}` as any)}
           >
-            <Text style={styles.viewButtonText}>Voir profil →</Text>
+            <Text style={styles.viewBtnText}>Voir profil</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -134,44 +165,44 @@ const SearchScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Search Bar */}
       <View style={styles.searchContainer}>
-        <View style={styles.searchInputWrapper}>
-          <View style={styles.searchIcon}>
-            <SearchIcon size={20} color="#6c757d" />
-          </View>
+        <View style={styles.searchWrapper}>
+          <Icon name="search" size={20} color={COLORS.textSecondary} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Rechercher par nom, prénom ou N° dossier..."
+            placeholder="Rechercher par nom, ID ou dossier..."
             value={searchQuery}
             onChangeText={setSearchQuery}
+            placeholderTextColor={COLORS.textSecondary}
             autoCapitalize="none"
             autoCorrect={false}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity
-              style={styles.clearButton}
+              style={styles.clearBtn}
               onPress={() => setSearchQuery('')}
             >
-              <Text style={styles.clearButtonText}>✕</Text>
+              <Icon name="close-circle" size={20} color={COLORS.textTertiary} />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
       {loading && !refreshing ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#dc3545" />
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color={COLORS.red} />
           <Text style={styles.loadingText}>Chargement des patients...</Text>
         </View>
       ) : (
         <ScrollView
-          style={styles.resultsContainer}
+          style={styles.results}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#dc3545']}
-              tintColor="#dc3545"
+              tintColor={COLORS.red}
+              colors={[COLORS.red]}
             />
           }
         >
@@ -180,34 +211,36 @@ const SearchScreen = () => {
               {filteredPatients.length} patient{filteredPatients.length !== 1 ? 's' : ''} trouvé{filteredPatients.length !== 1 ? 's' : ''}
             </Text>
             {searchQuery.trim() && (
-              <Text style={styles.searchQueryDisplay}>
-                Recherche: "{searchQuery}"
+              <Text style={styles.queryText}>
+                « {searchQuery} »
               </Text>
             )}
           </View>
 
           {filteredPatients.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <SearchIcon size={64} color="#e9ecef" />
+            <View style={styles.empty}>
+              <View style={styles.emptyIcon}>
+                <Icon name="search" size={64} color={COLORS.border} />
+              </View>
               <Text style={styles.emptyTitle}>
                 {searchQuery.trim() ? 'Aucun patient trouvé' : 'Aucun patient enregistré'}
               </Text>
-              <Text style={styles.emptyText}>
+              <Text style={styles.emptySubtitle}>
                 {searchQuery.trim()
-                  ? 'Essayez avec un autre terme de recherche'
-                  : 'Commencez par créer un nouveau patient'}
+                  ? 'Essayez un autre terme de recherche'
+                  : 'Commencez par ajouter un patient'}
               </Text>
               {!searchQuery.trim() && (
                 <TouchableOpacity
-                  style={styles.createButton}
+                  style={styles.createBtn}
                   onPress={() => router.push('/create-patient')}
                 >
-                  <Text style={styles.createButtonText}>+ Créer un patient</Text>
+                  <Text style={styles.createBtnText}>+ Créer un patient</Text>
                 </TouchableOpacity>
               )}
             </View>
           ) : (
-            <View style={styles.patientsList}>
+            <View style={styles.list}>
               {filteredPatients.map(renderPatientCard)}
             </View>
           )}
@@ -217,184 +250,206 @@ const SearchScreen = () => {
   );
 };
 
+/* ------------------------------------------------------------- */
+/* STYLES – 100% CONSISTENT WITH HomeScreen.tsx                  */
+/* ------------------------------------------------------------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.bg,
   },
+
+  // Search Bar
   searchContainer: {
-    backgroundColor: 'white',
-    padding: 16,
+    backgroundColor: COLORS.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    borderBottomColor: COLORS.border,
+    paddingHorizontal: SPACING * 3,
+    paddingTop: SPACING * 2,
+    paddingBottom: SPACING * 2,
   },
-  searchInputWrapper: {
+  searchWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#e9ecef',
-    paddingHorizontal: 12,
-  },
-  searchIcon: {
-    marginRight: 8,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS,
+    paddingHorizontal: SPACING * 2,
+    paddingVertical: SPACING * 1.8,
+    gap: SPACING,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#495057',
+    fontSize: 15,
+    color: COLORS.textPrimary,
   },
-  clearButton: {
-    padding: 4,
+  clearBtn: {
+    padding: SPACING / 2,
   },
-  clearButtonText: {
-    fontSize: 20,
-    color: '#6c757d',
-  },
-  loadingContainer: {
+
+  // Loading
+  loading: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: SPACING * 4,
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#6c757d',
+    marginTop: SPACING * 2,
+    fontSize: 15,
+    color: COLORS.textSecondary,
   },
-  resultsContainer: {
+
+  // Results
+  results: {
     flex: 1,
   },
   resultsHeader: {
-    padding: 16,
-    backgroundColor: 'white',
+    paddingHorizontal: SPACING * 3,
+    paddingVertical: SPACING * 2,
+    backgroundColor: COLORS.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    borderBottomColor: COLORS.border,
   },
   resultsCount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#495057',
+    fontSize: 17,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
   },
-  searchQueryDisplay: {
-    fontSize: 14,
-    color: '#6c757d',
-    marginTop: 4,
+  queryText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: SPACING / 2,
+    fontStyle: 'italic',
   },
-  patientsList: {
-    padding: 16,
+
+  // Patient Card
+  list: {
+    padding: SPACING * 3,
+    gap: SPACING * 2,
   },
   patientCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS,
     borderWidth: 1,
-    borderColor: '#e9ecef',
-    shadowColor: '#000',
+    borderColor: COLORS.borderLight,
+    padding: SPACING * 2.5,
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  patientCardHeader: {
+  patientHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: SPACING * 2,
   },
-  avatarContainer: {
+  avatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#fee',
+    backgroundColor: COLORS.redBg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: SPACING * 2,
   },
   patientInfo: {
     flex: 1,
   },
   patientName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#495057',
-    marginBottom: 4,
-  },
-  patientDetail: {
-    fontSize: 14,
-    color: '#6c757d',
+    fontSize: 17,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
     marginBottom: 2,
   },
-  patientCardStats: {
+  patientId: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: 2,
+  },
+  patientMeta: {
+    fontSize: 13,
+    color: COLORS.textTertiary,
+  },
+
+  // Stats Row
+  statsRow: {
     flexDirection: 'row',
-    gap: 16,
-    paddingVertical: 12,
+    gap: SPACING * 3,
+    paddingVertical: SPACING * 1.5,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#e9ecef',
-    marginBottom: 12,
+    borderColor: COLORS.borderLight,
+    marginBottom: SPACING * 2,
   },
   statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: SPACING,
   },
   statText: {
     fontSize: 13,
-    color: '#495057',
+    color: COLORS.textSecondary,
   },
-  patientCardFooter: {
+
+  // Footer
+  cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   footerText: {
     fontSize: 12,
-    color: '#6c757d',
+    color: COLORS.textTertiary,
   },
-  viewButton: {
-    backgroundColor: '#dc3545',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+  viewBtn: {
+    backgroundColor: COLORS.red,
+    paddingHorizontal: SPACING * 2,
+    paddingVertical: SPACING,
+    borderRadius: RADIUS - 4,
   },
-  viewButtonText: {
-    fontSize: 14,
+  viewBtnText: {
+    fontSize: 13,
     fontWeight: '600',
-    color: 'white',
+    color: COLORS.white,
   },
-  emptyContainer: {
+
+  // Empty State
+  empty: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
-    marginTop: 60,
+    paddingHorizontal: SPACING * 4,
+    marginTop: SPACING * 8,
+  },
+  emptyIcon: {
+    marginBottom: SPACING * 3,
+    opacity: 0.3,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#495057',
-    marginTop: 16,
-    marginBottom: 8,
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginBottom: SPACING,
   },
-  emptyText: {
-    fontSize: 16,
-    color: '#6c757d',
+  emptySubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
     textAlign: 'center',
+    marginBottom: SPACING * 3,
   },
-  createButton: {
-    backgroundColor: '#dc3545',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 24,
+  createBtn: {
+    backgroundColor: COLORS.red,
+    paddingHorizontal: SPACING * 4,
+    paddingVertical: SPACING * 1.8,
+    borderRadius: RADIUS,
   },
-  createButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
+  createBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.white,
   },
 });
 

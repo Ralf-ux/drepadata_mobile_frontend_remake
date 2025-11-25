@@ -1,3 +1,4 @@
+/* PatientVaccinationScreen.tsx – Professional Medical Vaccination */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,15 +9,13 @@ import {
   Switch,
   Alert,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import {
-  getPatientById,
-  getVaccinationRecordByPatientId,
-  saveVaccinationRecord,
-  type PatientProfile,
-  type VaccinationRecord,
-} from '@/utils/storage';
+import { Ionicons } from '@expo/vector-icons';
+import { getPatientById } from '@/utils/storage/patientStorage';
+import { getVaccinationsByPatientId, saveVaccination } from '@/utils/storage/vaccinationStorage';
+import { PatientProfile, VaccinationRecord } from '@/utils/types';
 import { shareDocument, exportVaccinationAsFile } from '@/utils/documentGenerator';
 
 const vaccinationSchedule = [
@@ -37,6 +36,38 @@ const vaccinationSchedule = [
   { period: '9 Mois', vaccine: 'VAR' },
   { period: '9 Mois', vaccine: 'VAA' },
 ];
+
+/* ------------------------------------------------------------- */
+/* DESIGN SYSTEM                                                 */
+/* ------------------------------------------------------------- */
+const COLORS = {
+  bg: '#FFF1F2',
+  bgSecondary: '#FFF7ED',
+  white: '#FFFFFF',
+  textPrimary: '#1E293B',
+  textSecondary: '#64748B',
+  textTertiary: '#94A3B8',
+  red: '#DC2626',
+  redLight: '#FCA5A5',
+  redBg: '#FEE2E2',
+  rose: '#F43F5E',
+  roseLight: '#FDA4AF',
+  roseBg: '#FFE4E6',
+  amber: '#F59E0B',
+  amberBg: '#FEF3C7',
+  emerald: '#10B981',
+  emeraldBg: '#D1FAE5',
+  border: '#FFE4E6',
+  borderLight: '#FFF1F2',
+  shadow: 'rgba(220, 38, 38, 0.15)',
+};
+
+const SPACING = 8;
+const RADIUS = 12;
+
+const Icon = ({ name, size = 20, color = COLORS.textPrimary }: any) => (
+  <Ionicons name={name} size={size} color={color} />
+);
 
 const PatientVaccinationScreen = () => {
   const router = useRouter();
@@ -66,10 +97,11 @@ const PatientVaccinationScreen = () => {
       setPatient(patientData);
 
       if (patientData) {
-        let record = await getVaccinationRecordByPatientId(patientId);
+        const records = await getVaccinationsByPatientId(patientId);
+        let record = records.length > 0 ? records[0] : null;
         if (!record) {
           record = {
-            id: patientId,
+            id: '',
             patient_id: patientId,
             patient_name: `${patientData.nom} ${patientData.prenom}`,
             patient_age: patientData.age,
@@ -103,7 +135,7 @@ const PatientVaccinationScreen = () => {
 
   const handleSave = async () => {
     try {
-      await saveVaccinationRecord(vaccinationData);
+      await saveVaccination(vaccinationData);
       Alert.alert(
         'Succès',
         'Calendrier vaccinal sauvegardé!',
@@ -112,10 +144,7 @@ const PatientVaccinationScreen = () => {
             text: 'Retour au profil',
             onPress: () => router.replace(`/patient/${patientId}` as any),
           },
-          {
-            text: 'Rester ici',
-            style: 'cancel',
-          },
+          { text: 'Rester ici', style: 'cancel' },
         ]
       );
     } catch (error) {
@@ -133,16 +162,17 @@ const PatientVaccinationScreen = () => {
   };
 
   const getCompletionPercentage = () => {
-    const completedVaccinations = vaccinationSchedule.filter(item => 
+    const completed = vaccinationSchedule.filter(item =>
       vaccinationData.vaccinations[item.vaccine]
     ).length;
-    return Math.round((completedVaccinations / vaccinationSchedule.length) * 100);
+    return Math.round((completed / vaccinationSchedule.length) * 100);
   };
 
   if (loading || !patient) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Chargement...</Text>
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color={COLORS.amber} />
+        <Text style={styles.loadingText}>Chargement du patient...</Text>
       </View>
     );
   }
@@ -154,28 +184,38 @@ const PatientVaccinationScreen = () => {
       <Stack.Screen
         options={{
           title: 'Calendrier Vaccinal',
-          headerStyle: { backgroundColor: '#ffc107' },
+          headerStyle: { backgroundColor: COLORS.amber },
           headerTintColor: '#fff',
         }}
       />
+
       <ScrollView
+        style={styles.scroll}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#ffc107']}
-            tintColor="#ffc107"
+            tintColor={COLORS.amber}
+            colors={[COLORS.amber]}
           />
         }
       >
+        {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.patientName}>
-            {patient.nom} {patient.prenom}
-          </Text>
-          <Text style={styles.patientAge}>Âge: {patient.age} ans</Text>
+          <View style={styles.headerContent}>
+            <Text style={styles.patientName}>
+              {patient.nom} {patient.prenom}
+            </Text>
+            <Text style={styles.patientAge}>Âge: {patient.age} ans</Text>
+          </View>
           <View style={styles.progressContainer}>
             <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${completionPercentage}%` }]} />
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${completionPercentage}%` },
+                ]}
+              />
             </View>
             <Text style={styles.progressText}>
               Complété à {completionPercentage}%
@@ -183,31 +223,46 @@ const PatientVaccinationScreen = () => {
           </View>
         </View>
 
-        <View style={styles.tableContainer}>
+        {/* Vaccination Table */}
+        <View style={styles.tableCard}>
           <View style={styles.tableHeader}>
-            <Text style={[styles.tableHeaderText, { flex: 2 }]}>Période</Text>
-            <Text style={[styles.tableHeaderText, { flex: 3 }]}>Vaccin</Text>
-            <Text style={[styles.tableHeaderText, { flex: 2 }]}>Reçu</Text>
+            <Text style={[styles.headerText, { flex: 2 }]}>Période</Text>
+            <Text style={[styles.headerText, { flex: 3 }]}>Vaccin</Text>
+            <Text style={[styles.headerText, { flex: 2, textAlign: 'center' }]}>Reçu</Text>
           </View>
 
-          {vaccinationSchedule.map((item, index) => (
-            <View key={index} style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 2 }]}>{item.period}</Text>
-              <Text style={[styles.tableCell, { flex: 3 }]}>{item.vaccine}</Text>
-              <View style={{ flex: 2, alignItems: 'center' }}>
-                <Switch
-                  value={vaccinationData.vaccinations[item.vaccine] || false}
-                  onValueChange={(value) => updateVaccination(item.vaccine, value)}
-                  trackColor={{ false: '#e9ecef', true: '#28a745' }}
-                  thumbColor={vaccinationData.vaccinations[item.vaccine] ? '#ffffff' : '#f4f3f4'}
-                />
+          {vaccinationSchedule.map((item, index) => {
+            const isReceived = vaccinationData.vaccinations[item.vaccine] || false;
+            return (
+              <View
+                key={index}
+                style={[
+                  styles.tableRow,
+                  index % 2 === 0 && styles.tableRowEven,
+                ]}
+              >
+                <Text style={[styles.cell, { flex: 2 }]}>{item.period}</Text>
+                <Text style={[styles.cell, { flex: 3 }]}>{item.vaccine}</Text>
+                <View style={{ flex: 2, alignItems: 'center' }}>
+                  <Switch
+                    value={isReceived}
+                    onValueChange={(value) => updateVaccination(item.vaccine, value)}
+                    trackColor={{ false: COLORS.borderLight, true: COLORS.emerald }}
+                    thumbColor={isReceived ? COLORS.white : COLORS.textTertiary}
+                    ios_backgroundColor={COLORS.borderLight}
+                  />
+                </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
+        {/* Summary Card */}
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>📊 Résumé</Text>
+          <View style={styles.summaryHeader}>
+            <Icon name="bar-chart" size={20} color={COLORS.amber} />
+            <Text style={styles.summaryTitle}>Résumé du calendrier</Text>
+          </View>
           <Text style={styles.summaryText}>
             Vaccinations reçues: {vaccinationSchedule.filter(item => vaccinationData.vaccinations[item.vaccine]).length}/{vaccinationSchedule.length}
           </Text>
@@ -219,62 +274,79 @@ const PatientVaccinationScreen = () => {
           </Text>
         </View>
 
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={[styles.button, styles.saveButton]}
-            onPress={handleSave}
-          >
-            <Text style={styles.buttonText}>💾 Enregistrer</Text>
+        {/* Action Buttons */}
+        <View style={styles.actions}>
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+            <Icon name="save" size={18} color={COLORS.white} />
+            <Text style={styles.btnText}>Enregistrer</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.exportBtn} onPress={handleExport}>
+            <Icon name="document" size={18} color={COLORS.white} />
+            <Text style={styles.btnText}>Exporter (DOC)</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.exportButton]}
-            onPress={handleExport}
-          >
-            <Text style={styles.buttonText}>📄 Exporter (DOC)</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.backButton]}
+            style={styles.backBtn}
             onPress={() => router.back()}
           >
-            <Text style={styles.buttonText}>⬅️ Retour au profil</Text>
+            <Icon name="arrow-back" size={18} color={COLORS.white} />
+            <Text style={styles.btnText}>Retour au profil</Text>
           </TouchableOpacity>
         </View>
+
+        <View style={{ height: 40 }} />
       </ScrollView>
     </View>
   );
 };
 
+/* ------------------------------------------------------------- */
+/* STYLES – 100% CONSISTENT WITH HomeScreen.tsx                  */
+/* ------------------------------------------------------------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.bg,
   },
-  loadingContainer: {
+  scroll: {
+    flex: 1,
+  },
+
+  // Loading
+  loading: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: SPACING * 4,
   },
   loadingText: {
-    fontSize: 16,
-    color: '#6c757d',
+    marginTop: SPACING * 2,
+    fontSize: 15,
+    color: COLORS.textSecondary,
   },
+
+  // Header
   header: {
-    backgroundColor: '#ffc107',
-    padding: 24,
+    backgroundColor: COLORS.amber,
+    padding: SPACING * 3,
     alignItems: 'center',
+    borderBottomLeftRadius: RADIUS,
+    borderBottomRightRadius: RADIUS,
+  },
+  headerContent: {
+    alignItems: 'center',
+    marginBottom: SPACING * 2,
   },
   patientName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
+    fontSize: 20,
+    fontWeight: '600',
+    color: COLORS.white,
+    marginBottom: SPACING / 2,
   },
   patientAge: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'rgba(255,255,255,0.9)',
-    marginTop: 4,
-    marginBottom: 16,
   },
   progressContainer: {
     width: '100%',
@@ -286,94 +358,133 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 6,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: SPACING,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#28a745',
+    backgroundColor: COLORS.emerald,
     borderRadius: 6,
   },
   progressText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: '600',
+    color: COLORS.white,
   },
-  tableContainer: {
-    backgroundColor: 'white',
-    margin: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
+
+  // Table Card
+  tableCard: {
+    margin: SPACING * 3,
+    marginTop: SPACING * 2,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    overflow: 'hidden',
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 3,
-    overflow: 'hidden',
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#ffc107',
-    padding: 12,
+    backgroundColor: COLORS.amberBg,
+    padding: SPACING * 1.5,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.borderLight,
   },
-  tableHeaderText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
+  headerText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
   },
   tableRow: {
     flexDirection: 'row',
+    paddingVertical: SPACING * 1.5,
+    paddingHorizontal: SPACING * 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    borderBottomColor: COLORS.borderLight,
   },
-  tableCell: {
+  tableRowEven: {
+    backgroundColor: COLORS.bgSecondary,
+  },
+  cell: {
     fontSize: 14,
-    color: '#495057',
+    color: COLORS.textPrimary,
   },
+
+  // Summary Card
   summaryCard: {
-    backgroundColor: '#fff3cd',
-    margin: 20,
-    marginTop: 0,
-    padding: 16,
-    borderRadius: 12,
+    marginHorizontal: SPACING * 3,
+    marginTop: SPACING,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS,
     borderWidth: 1,
-    borderColor: '#ffc107',
+    borderColor: COLORS.borderLight,
+    padding: SPACING * 2.5,
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  summaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING,
+    marginBottom: SPACING,
   },
   summaryTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#856404',
-    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
   },
   summaryText: {
     fontSize: 14,
-    color: '#856404',
-    marginBottom: 4,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING / 2,
   },
-  actionButtons: {
-    padding: 20,
-    gap: 12,
-    paddingBottom: 32,
+
+  // Actions
+  actions: {
+    padding: SPACING * 3,
+    gap: SPACING * 1.5,
+    paddingBottom: SPACING * 5,
   },
-  button: {
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+  saveBtn: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.emerald,
+    paddingVertical: SPACING * 1.8,
+    paddingHorizontal: SPACING * 3,
+    borderRadius: RADIUS,
+    justifyContent: 'center',
     alignItems: 'center',
+    gap: SPACING,
   },
-  saveButton: {
-    backgroundColor: '#28a745',
+  exportBtn: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.rose,
+    paddingVertical: SPACING * 1.8,
+    paddingHorizontal: SPACING * 3,
+    borderRadius: RADIUS,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: SPACING,
   },
-  exportButton: {
-    backgroundColor: '#007bff',
+  backBtn: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.red,
+    paddingVertical: SPACING * 1.8,
+    paddingHorizontal: SPACING * 3,
+    borderRadius: RADIUS,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: SPACING,
   },
-  backButton: {
-    backgroundColor: '#6c757d',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
+  btnText: {
+    fontSize: 15,
     fontWeight: '600',
+    color: COLORS.white,
   },
 });
 

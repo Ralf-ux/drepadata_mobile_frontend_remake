@@ -50,12 +50,12 @@ const ConsultationChoiceScreen = () => {
           { text: 'Annuler', style: 'cancel' },
           {
             text: 'Continuer',
-            onPress: () => router.push(`/(tabs)/consultations` as any),
+            onPress: () => router.push(`/consultation/initial/${patientId}` as any),
           },
         ]
       );
     } else {
-      router.push(`/(tabs)/consultations` as any);
+      router.push(`/consultation/initial/${patientId}` as any);
     }
   };
 

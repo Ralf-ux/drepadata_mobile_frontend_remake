@@ -746,18 +746,11 @@ export const exportDocumentAsFile = async (
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } else {
-      const fileUri = `${FileSystem.documentDirectory}${fileName}.${format}`;
-      await FileSystem.writeAsStringAsync(fileUri, content, {
-        encoding: FileSystem.EncodingType.UTF8,
+      // For mobile, use sharing directly since file system operations are complex
+      await Share.share({
+        message: content,
+        title: fileName,
       });
-
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
-        await Sharing.shareAsync(fileUri, {
-          mimeType: format === 'rtf' ? 'application/rtf' : 'text/plain',
-          dialogTitle: 'Exporter le document',
-        });
-      }
     }
   } catch (error) {
     console.error('Error exporting document:', error);

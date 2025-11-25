@@ -1,3 +1,4 @@
+/* ConsultationsScreen.tsx – Professional Medical Consultations */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -6,9 +7,10 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { FileText, Calendar, User, Activity } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import {
   getConsultations,
   getFollowUps,
@@ -28,6 +30,35 @@ type ConsultationWithPatient = ConsultationData & {
 type FollowUpWithPatient = FollowUpData & {
   patientName?: string;
 };
+
+const COLORS = {
+  bg: '#FFF1F2',
+  bgSecondary: '#FFF7ED',
+  white: '#FFFFFF',
+  textPrimary: '#1E293B',
+  textSecondary: '#64748B',
+  textTertiary: '#94A3B8',
+  red: '#DC2626',
+  redLight: '#FCA5A5',
+  redBg: '#FEE2E2',
+  rose: '#F43F5E',
+  roseLight: '#FDA4AF',
+  roseBg: '#FFE4E6',
+  amber: '#F59E0B',
+  amberBg: '#FEF3C7',
+  emerald: '#10B981',
+  emeraldBg: '#D1FAE5',
+  border: '#FFE4E6',
+  borderLight: '#FFF1F2',
+  shadow: 'rgba(220, 38, 38, 0.15)',
+};
+
+const SPACING = 8;
+const RADIUS = 12;
+
+const Icon = ({ name, size = 20, color = COLORS.textPrimary }: any) => (
+  <Ionicons name={name} size={size} color={color} />
+);
 
 const ConsultationsScreen = () => {
   const router = useRouter();
@@ -80,42 +111,46 @@ const ConsultationsScreen = () => {
 
   const renderConsultation = (consultation: ConsultationWithPatient) => {
     const date = new Date(consultation.consultation_date || consultation.created_at);
-    
+    const isInitial = consultation.consultation_type === 'initial';
+
     return (
       <TouchableOpacity
         key={consultation.id}
         style={styles.card}
         onPress={() => router.push(`/patient/${consultation.patient_id}` as any)}
+        activeOpacity={0.7}
       >
         <View style={styles.cardHeader}>
           <View style={[
-            styles.iconContainer,
-            { backgroundColor: consultation.consultation_type === 'initial' ? '#dc3545' : '#007bff' }
+            styles.iconBadge,
+            { backgroundColor: isInitial ? COLORS.redBg : COLORS.roseBg }
           ]}>
-            <FileText size={24} color="white" />
+            <Icon name="document-text" size={22} color={isInitial ? COLORS.red : COLORS.rose} />
           </View>
           <View style={styles.cardInfo}>
             <Text style={styles.cardTitle}>{consultation.patientName}</Text>
             <Text style={styles.cardSubtitle}>
-              {consultation.consultation_type === 'initial' ? 'Consultation Initiale' : 'Consultation de Suivi'}
+              {isInitial ? 'Consultation Initiale' : 'Consultation de Suivi'}
             </Text>
           </View>
         </View>
 
-        <View style={styles.cardDetails}>
+        <View style={styles.details}>
           <View style={styles.detailRow}>
-            <Calendar size={16} color="#6c757d" />
+            <Icon name="calendar" size={16} color={COLORS.textTertiary} />
             <Text style={styles.detailText}>
               {date.toLocaleDateString('fr-FR')} à {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
             </Text>
           </View>
           {consultation.fosa && (
             <View style={styles.detailRow}>
+              <Icon name="business" size={16} color={COLORS.textTertiary} />
               <Text style={styles.detailText}>FOSA: {consultation.fosa}</Text>
             </View>
           )}
           {consultation.poids && (
             <View style={styles.detailRow}>
+              <Icon name="fitness" size={16} color={COLORS.textTertiary} />
               <Text style={styles.detailText}>
                 Poids: {consultation.poids} kg • Taille: {consultation.taille} cm
               </Text>
@@ -123,33 +158,37 @@ const ConsultationsScreen = () => {
           )}
           {consultation.referred_from && (
             <View style={styles.detailRow}>
+              <Icon name="arrow-forward-circle" size={16} color={COLORS.textTertiary} />
               <Text style={styles.detailText}>Référé de: {consultation.referred_from}</Text>
             </View>
           )}
         </View>
 
-        <TouchableOpacity
-          style={styles.viewButton}
-          onPress={() => router.push(`/patient/${consultation.patient_id}` as any)}
-        >
-          <Text style={styles.viewButtonText}>Voir le profil →</Text>
-        </TouchableOpacity>
+        <View style={styles.cardFooter}>
+          <TouchableOpacity
+            style={styles.viewBtn}
+            onPress={() => router.push(`/patient/${consultation.patient_id}` as any)}
+          >
+            <Text style={styles.viewBtnText}>Voir le profil</Text>
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
     );
   };
 
   const renderFollowUp = (followUp: FollowUpWithPatient) => {
     const date = new Date(followUp.follow_up_date);
-    
+
     return (
       <TouchableOpacity
         key={followUp.id}
         style={styles.card}
         onPress={() => router.push(`/patient/${followUp.patient_id}` as any)}
+        activeOpacity={0.7}
       >
         <View style={styles.cardHeader}>
-          <View style={[styles.iconContainer, { backgroundColor: '#28a745' }]}>
-            <Activity size={24} color="white" />
+          <View style={[styles.iconBadge, { backgroundColor: COLORS.emeraldBg }]}>
+            <Icon name="pulse" size={22} color={COLORS.emerald} />
           </View>
           <View style={styles.cardInfo}>
             <Text style={styles.cardTitle}>{followUp.patientName}</Text>
@@ -157,15 +196,16 @@ const ConsultationsScreen = () => {
           </View>
         </View>
 
-        <View style={styles.cardDetails}>
+        <View style={styles.details}>
           <View style={styles.detailRow}>
-            <Calendar size={16} color="#6c757d" />
+            <Icon name="calendar" size={16} color={COLORS.textTertiary} />
             <Text style={styles.detailText}>
               {date.toLocaleDateString('fr-FR')} à {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
             </Text>
           </View>
           {followUp.poids && (
             <View style={styles.detailRow}>
+              <Icon name="fitness" size={16} color={COLORS.textTertiary} />
               <Text style={styles.detailText}>
                 Poids: {followUp.poids} kg • Taille: {followUp.taille} cm
               </Text>
@@ -173,17 +213,20 @@ const ConsultationsScreen = () => {
           )}
           {followUp.taux_hemoglobine_recent && (
             <View style={styles.detailRow}>
+              <Icon name="water" size={16} color={COLORS.textTertiary} />
               <Text style={styles.detailText}>Hb: {followUp.taux_hemoglobine_recent} g/dl</Text>
             </View>
           )}
         </View>
 
-        <TouchableOpacity
-          style={styles.viewButton}
-          onPress={() => router.push(`/patient/${followUp.patient_id}` as any)}
-        >
-          <Text style={styles.viewButtonText}>Voir le profil →</Text>
-        </TouchableOpacity>
+        <View style={styles.cardFooter}>
+          <TouchableOpacity
+            style={styles.viewBtn}
+            onPress={() => router.push(`/patient/${followUp.patient_id}` as any)}
+          >
+            <Text style={styles.viewBtnText}>Voir le profil</Text>
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -202,12 +245,14 @@ const ConsultationsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.tabsContainer}>
+      {/* Tabs */}
+      <View style={styles.tabs}>
         <TouchableOpacity
           style={[styles.tab, viewMode === 'consultations' && styles.tabActive]}
           onPress={() => setViewMode('consultations')}
+          activeOpacity={0.8}
         >
-          <FileText size={20} color={viewMode === 'consultations' ? '#dc3545' : '#6c757d'} />
+          <Icon name="document-text" size={20} color={viewMode === 'consultations' ? COLORS.red : COLORS.textSecondary} />
           <Text style={[styles.tabText, viewMode === 'consultations' && styles.tabTextActive]}>
             Consultations ({consultations.length})
           </Text>
@@ -216,8 +261,9 @@ const ConsultationsScreen = () => {
         <TouchableOpacity
           style={[styles.tab, viewMode === 'followups' && styles.tabActive]}
           onPress={() => setViewMode('followups')}
+          activeOpacity={0.8}
         >
-          <Activity size={20} color={viewMode === 'followups' ? '#28a745' : '#6c757d'} />
+          <Icon name="pulse" size={20} color={viewMode === 'followups' ? COLORS.emerald : COLORS.textSecondary} />
           <Text style={[styles.tabText, viewMode === 'followups' && styles.tabTextActive]}>
             Suivis ({followUps.length})
           </Text>
@@ -230,21 +276,24 @@ const ConsultationsScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#dc3545']}
-            tintColor="#dc3545"
+            tintColor={COLORS.red}
+            colors={[COLORS.red]}
           />
         }
       >
         {loading ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Chargement...</Text>
+          <View style={styles.loading}>
+            <ActivityIndicator size="large" color={COLORS.red} />
+            <Text style={styles.loadingText}>Chargement des données...</Text>
           </View>
         ) : viewMode === 'consultations' ? (
           sortedConsultations.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <FileText size={64} color="#e9ecef" />
+            <View style={styles.empty}>
+              <View style={styles.emptyIcon}>
+                <Icon name="document-text" size={64} color={COLORS.border} />
+              </View>
               <Text style={styles.emptyTitle}>Aucune consultation</Text>
-              <Text style={styles.emptyText}>
+              <Text style={styles.emptySubtitle}>
                 Les consultations apparaîtront ici après leur création
               </Text>
             </View>
@@ -255,10 +304,12 @@ const ConsultationsScreen = () => {
           )
         ) : (
           sortedFollowUps.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Activity size={64} color="#e9ecef" />
+            <View style={styles.empty}>
+              <View style={styles.emptyIcon}>
+                <Icon name="pulse" size={64} color={COLORS.border} />
+              </View>
               <Text style={styles.emptyTitle}>Aucun suivi</Text>
-              <Text style={styles.emptyText}>
+              <Text style={styles.emptySubtitle}>
                 Les suivis trimestriels apparaîtront ici après leur création
               </Text>
             </View>
@@ -268,140 +319,165 @@ const ConsultationsScreen = () => {
             </View>
           )
         )}
+        <View style={{ height: 40 }} />
       </ScrollView>
     </View>
   );
 };
 
+/* ------------------------------------------------------------- */
+/* STYLES – 100% CONSISTENT WITH HomeScreen.tsx                  */
+/* ------------------------------------------------------------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.bg,
   },
-  tabsContainer: {
+
+  // Tabs
+  tabs: {
     flexDirection: 'row',
-    backgroundColor: 'white',
+    backgroundColor: COLORS.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    borderBottomColor: COLORS.border,
   },
   tab: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    gap: 8,
-    borderBottomWidth: 3,
-    borderBottomColor: 'transparent',
+    paddingVertical: SPACING * 2,
+    gap: SPACING * 1.5,
   },
   tabActive: {
-    borderBottomColor: '#dc3545',
+    borderBottomWidth: 3,
+    borderBottomColor: COLORS.red,
   },
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6c757d',
+    color: COLORS.textSecondary,
   },
   tabTextActive: {
-    color: '#dc3545',
+    color: COLORS.red,
   },
+
+  // Content
   content: {
     flex: 1,
   },
   list: {
-    padding: 16,
+    padding: SPACING * 3,
+    gap: SPACING * 2,
   },
+
+  // Card
   card: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS,
     borderWidth: 1,
-    borderColor: '#e9ecef',
-    shadowColor: '#000',
+    borderColor: COLORS.borderLight,
+    padding: SPACING * 2.5,
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING * 2,
   },
-  iconContainer: {
+  iconBadge: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: RADIUS - 2,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: SPACING * 2,
   },
   cardInfo: {
     flex: 1,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#495057',
+    fontSize: 17,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
     marginBottom: 2,
   },
   cardSubtitle: {
-    fontSize: 14,
-    color: '#6c757d',
+    fontSize: 13,
+    color: COLORS.textSecondary,
   },
-  cardDetails: {
-    gap: 8,
-    marginBottom: 12,
+
+  // Details
+  details: {
+    gap: SPACING,
+    marginBottom: SPACING * 2,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: SPACING,
   },
   detailText: {
     fontSize: 13,
-    color: '#6c757d',
+    color: COLORS.textTertiary,
   },
-  viewButton: {
-    backgroundColor: '#f8f9fa',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
+
+  // Footer
+  cardFooter: {
+    alignItems: 'flex-end',
   },
-  viewButtonText: {
-    fontSize: 14,
+  viewBtn: {
+    backgroundColor: COLORS.red,
+    paddingHorizontal: SPACING * 2,
+    paddingVertical: SPACING,
+    borderRadius: RADIUS - 4,
+  },
+  viewBtnText: {
+    fontSize: 13,
     fontWeight: '600',
-    color: '#dc3545',
+    color: COLORS.white,
   },
-  emptyContainer: {
-    alignItems: 'center',
+
+  // Loading
+  loading: {
+    flex: 1,
     justifyContent: 'center',
-    padding: 48,
-    marginTop: 60,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#495057',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#6c757d',
-    textAlign: 'center',
-  },
-  loadingContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 48,
-    marginTop: 60,
+    padding: SPACING * 4,
   },
   loadingText: {
-    fontSize: 16,
-    color: '#6c757d',
+    marginTop: SPACING * 2,
+    fontSize: 15,
+    color: COLORS.textSecondary,
+  },
+
+  // Empty State
+  empty: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING * 4,
+    marginTop: SPACING * 8,
+  },
+  emptyIcon: {
+    marginBottom: SPACING * 3,
+    opacity: 0.3,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginBottom: SPACING,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING * 3,
   },
 });
 

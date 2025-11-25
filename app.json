@@ -27,7 +27,15 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "INTERNET"
-      ]
+      ],
+      "networkSecurityConfig": {
+        "domain-config": [
+          {
+            "domain": ["10.238.128.96"],
+            "cleartextTrafficPermitted": true
+          }
+        ]
+      }
     },
     "web": {
       "favicon": "./assets/images/drepa.png"
@@ -40,8 +48,36 @@
         }
       ]
     ],
+    "web": {
+      "build": {
+        "babel": {
+          "include": [
+            "@babel/plugin-proposal-export-namespace-from"
+          ]
+        }
+      }
+    },
+    "packagerOpts": {
+      "config": "metro.config.js",
+      "sourceExts": [
+        "expo.ts",
+        "expo.tsx",
+        "expo.js",
+        "expo.jsx",
+        "ts",
+        "tsx",
+        "js",
+        "jsx",
+        "json",
+        "wasm",
+        "svg"
+      ]
+    },
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "apiUrl": "http://localhost:4000/api"
     }
   }
 }

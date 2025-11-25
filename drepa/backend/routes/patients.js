@@ -63,7 +63,12 @@ router.delete('/:id', async (req, res) => {
 // GET search patients
 router.get('/search/:query', async (req, res) => {
   try {
-    const query = req.params.query;
+    // SECURITY FIX: Escape regex special characters to prevent NoSQL injection
+    const escapeRegex = (str) => {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+    
+    const query = escapeRegex(req.params.query);
     const patients = await Patient.find({
       $or: [
         { nom: { $regex: query, $options: 'i' } },
@@ -73,7 +78,8 @@ router.get('/search/:query', async (req, res) => {
     });
     res.json(patients);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // SECURITY FIX: Don't expose error details
+    res.status(500).json({ message: 'An error occurred while searching patients' });
   }
 });
 

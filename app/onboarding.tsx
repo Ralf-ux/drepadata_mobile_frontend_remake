@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { setOnboardingComplete } from '../utils/storage';
+// import { setOnboardingComplete } from '../utils/storage';
 
 const OnboardingScreen = () => {
   const router = useRouter();
@@ -43,19 +43,19 @@ const OnboardingScreen = () => {
     },
   ];
 
-  const handleNext = async () => {
-    if (currentSlide < slides.length - 1) {
-      setCurrentSlide(currentSlide + 1);
-    } else {
-      await setOnboardingComplete();
-      router.replace('/(tabs)');
-    }
-  };
+  // const handleNext = async () => {
+  //   if (currentSlide < slides.length - 1) {
+  //     setCurrentSlide(currentSlide + 1);
+  //   } else {
+  //     await setOnboardingComplete();
+  //     router.replace('/(tabs)');
+  //   }
+  // };
 
-  const handleSkip = async () => {
-    await setOnboardingComplete();
-    router.replace('/(tabs)');
-  };
+  // const handleSkip = async () => {
+  //   await setOnboardingComplete();
+  //   router.replace('/(tabs)');
+  // };
 
   const { icon: Icon, title, description, color } = slides[currentSlide];
 
@@ -88,15 +88,15 @@ const OnboardingScreen = () => {
       </ScrollView>
 
       <View style={styles.footer}>
-        {currentSlide < slides.length - 1 && (
+        {/* {currentSlide < slides.length - 1 && (
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
             <Text style={styles.skipButtonText}>Passer</Text>
           </TouchableOpacity>
-        )}
+        )} */}
 
         <TouchableOpacity
           style={[styles.nextButton, { backgroundColor: color }]}
-          onPress={handleNext}
+          // onPress={handleNext}
         >
           <Text style={styles.nextButtonText}>
             {currentSlide < slides.length - 1 ? 'Suivant' : 'Commencer'}

@@ -16,6 +16,8 @@ import {
   Syringe,
   Download,
   Edit,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react-native';
 import {
   getPatientById,
@@ -43,6 +45,7 @@ const PatientProfileScreen = () => {
   const [vaccination, setVaccination] = useState<VaccinationRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [followUpsExpanded, setFollowUpsExpanded] = useState(false);
 
   useEffect(() => {
     loadPatientData();
@@ -64,11 +67,16 @@ const PatientProfileScreen = () => {
 
       if (patientData) {
         console.log('Loading additional data for patient:', patientData.nom, patientData.prenom);
+        // Use the MongoDB ObjectId from patientData instead of the route parameter
+        // This ensures we use the correct ID format even if the route had a UUID
+        const patientObjectId = patientData.id;
+        console.log('Using patient ObjectId for related data:', patientObjectId);
+        
         // Load additional data in parallel for better performance
         const [consultationsData, followUpsData, vaccinationData] = await Promise.all([
-          getConsultationsByPatientId(id),
-          getFollowUpsByPatientId(id),
-          getVaccinationRecordByPatientId(id)
+          getConsultationsByPatientId(patientObjectId),
+          getFollowUpsByPatientId(patientObjectId),
+          getVaccinationRecordByPatientId(patientObjectId)
         ]);
 
         console.log('Additional data loaded:', {
@@ -257,6 +265,56 @@ const PatientProfileScreen = () => {
         )}
         <Text style={styles.infoText}>Assurance: {patient.assurance || 'N/A'}</Text>
       </View>
+
+      {followUps.length > 0 && (
+        <View style={styles.infoSection}>
+          <TouchableOpacity
+            style={styles.sectionHeader}
+            onPress={() => setFollowUpsExpanded(!followUpsExpanded)}
+          >
+            <Text style={styles.sectionTitle}>Historique des suivis</Text>
+            {followUpsExpanded ? (
+              <ChevronUp size={20} color="#495057" />
+            ) : (
+              <ChevronDown size={20} color="#495057" />
+            )}
+          </TouchableOpacity>
+
+          {followUpsExpanded && (
+            <View style={styles.followUpsList}>
+              {followUps
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                .map((followUp, index) => (
+                  <View key={followUp.id} style={styles.followUpItem}>
+                    <View style={styles.followUpHeader}>
+                      <Text style={styles.followUpTitle}>
+                        Suivi N°{followUp.follow_up_number || index + 1}
+                      </Text>
+                      <Text style={styles.followUpDate}>
+                        {new Date(followUp.created_at).toLocaleDateString('fr-FR')}
+                      </Text>
+                    </View>
+                    {followUp.evolution && (
+                      <Text style={styles.followUpContent}>
+                        Évolution: {followUp.evolution}
+                      </Text>
+                    )}
+                    {followUp.commentaires && (
+                      <Text style={styles.followUpContent}>
+                        Commentaires: {followUp.commentaires}
+                      </Text>
+                    )}
+                    {followUp.autres_traitements_specifiques && (
+                      <Text style={styles.followUpContent}>
+                        Traitements spécifiques: {followUp.autres_traitements_specifiques}
+                      </Text>
+                    )}
+                  </View>
+                ))}
+            </View>
+          )}
+        </View>
+      )}
 
       <View style={styles.actions}>
         <TouchableOpacity
@@ -459,6 +517,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: 'white',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  followUpsList: {
+    marginTop: 12,
+  },
+  followUpItem: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  followUpHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  followUpTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#28a745',
+  },
+  followUpDate: {
+    fontSize: 14,
+    color: '#6c757d',
+  },
+  followUpContent: {
+    fontSize: 14,
+    color: '#495057',
+    marginBottom: 4,
   },
 });
 

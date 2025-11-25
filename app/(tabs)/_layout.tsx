@@ -11,11 +11,9 @@ export default function TabLayout() {
         headerShown: true,
         tabBarStyle: {
           backgroundColor: '#ffffff',
-          borderTopWidth: 1,
-          borderTopColor: '#E5E7EB',
         },
-        headerStyle: { backgroundColor: '#F9FAFB' },
-        headerTintColor: '#111827',
+        headerStyle: { backgroundColor: '#a7413aff' },
+        headerTintColor: '#fafbffff',
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >

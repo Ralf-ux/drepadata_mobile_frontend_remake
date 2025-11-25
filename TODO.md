@@ -1,20 +1,17 @@
-# TODO: Add Loading States to Screens
+# TODO: Apply Dashboard Design to All Files
 
-## Current Status
-- ✅ `consultation/[patientId].tsx` - Has basic loading when patient is null
-- ✅ `(tabs)/consultations.tsx` - Loading state added during data fetch
-- ✅ `follow-up/[patientId].tsx` - Loading state added during data fetch
-- ✅ `vaccination/[patientId].tsx` - Loading state added during data fetch
-- ✅ `consultation/[patientId].tsx` - Loading state improved for consistency
-- ✅ `consultation/initial/[patientId].tsx` - Loading state added during data fetch
-- ✅ `patient/[id].tsx` - Loading state fixed to prevent rendering incomplete data
+## Tasks
+- [ ] Convert create-patient.tsx to use Tailwind classes with slate colors
+- [ ] Convert onboarding.tsx to use slate colors and Tailwind
+- [ ] Update _layout.tsx header styles to use slate colors
+- [ ] Uncomment and update consultation/initial/[patientId].tsx
+- [ ] Test updated components for rendering and consistency
+- [ ] Ensure no TypeScript errors
 
-## Tasks Completed
-- [x] Add loading state to `(tabs)/consultations.tsx` during consultations/follow-ups fetch
-- [x] Add loading state to `follow-up/[patientId].tsx` during patient/follow-up data fetch
-- [x] Add loading state to `vaccination/[patientId].tsx` during patient/vaccination data fetch
-- [x] Improve loading state consistency in `consultation/[patientId].tsx`
-- [x] Add loading state to `consultation/initial/[patientId].tsx` during patient data fetch
-- [x] Fix loading state in `patient/[id].tsx` to prevent rendering incomplete data
-- [x] Add null checks and fallbacks for patient data display
-- [x] Add detailed console logging for debugging patient data loading
+## Progress
+- [x] Plan approved by user
+- [ ] create-patient.tsx updated
+- [ ] onboarding.tsx updated
+- [ ] _layout.tsx updated
+- [ ] consultation/initial/[patientId].tsx updated
+- [ ] Testing completed
